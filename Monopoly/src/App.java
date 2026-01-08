@@ -1,5 +1,8 @@
+import monopoly.main.Main;
+
 public class App {
     public static void main(String[] args) throws Exception {
-        System.out.println("Hello, World!");
+        // Delegar la ejecución a la clase Main del paquete monopoly
+        Main.main(args);
     }
 }
