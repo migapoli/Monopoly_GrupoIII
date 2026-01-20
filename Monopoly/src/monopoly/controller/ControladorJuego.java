@@ -1,8 +1,10 @@
 package monopoly.controller;
 
+import monopoly.model.cartas.CartaSuerte;
 import monopoly.model.casilla.Casilla;
+import monopoly.model.casilla.Casilla.TipoCasilla;
+import monopoly.model.casilla.CasillaEspecial;
 import monopoly.model.casilla.Propiedad;
-import monopoly.model.jugador.Dado;
 import monopoly.model.jugador.IJugador;
 import monopoly.model.tablero.Partida;
 
@@ -11,208 +13,384 @@ import java.util.List;
 
 public class ControladorJuego implements IControladorJuego {
     private Partida partida;
-    private List<ObservadorJuego> observadores;
+    private List<ObservadorExtendido> observadores;
     private boolean dadosLanzados;
-    
-    public ControladorJuego() {
-        this.partida = new Partida();
-        this.observadores = new ArrayList<>();
-        this.dadosLanzados = false;
-    }
-    
+
     public ControladorJuego(Partida partida) {
         this.partida = partida;
         this.observadores = new ArrayList<>();
         this.dadosLanzados = false;
     }
-    
+
     @Override
     public void iniciarPartida() {
-        if (partida.getJugadores().size() < 2) {
-            notificarMensaje("Se necesitan al menos 2 jugadores para iniciar");
-            return;
+        if (partida.puedeIniciar()) {
+            notificarMensaje("¡La partida ha comenzado con " + partida.getNumeroJugadores() + " jugadores!");
+            notificarActualizacion();
+            notificarCambioTurno(partida.getJugadorActual());
+        } else {
+            notificarMensaje("Error: Se necesitan al menos 2 jugadores para iniciar.");
         }
-        notificarMensaje("¡Partida iniciada!");
-        notificarCambioTurno(partida.getJugadorActual());
-        notificarActualizacion();
     }
-    
+
     @Override
     public void tirarDados() {
-        if (!dadosLanzados) {
-            IJugador jugadorActual = partida.getJugadorActual();
-            Dado dado = partida.getDado();
-            int[] valores = dado.lanzar();
-            
-            dadosLanzados = true;
-            notificarDadosLanzados(valores[0], valores[1]);
-            
-            // Mover al jugador
-            int nuevaPosicion = (jugadorActual.getPosicion() + dado.getSuma()) % 40;
-            
-            // Verificar si pasó por la salida
-            if (nuevaPosicion < jugadorActual.getPosicion()) {
-                jugadorActual.sumarDinero(200);
-                notificarMensaje(jugadorActual.getNombre() + " pasó por la Salida y cobró $200");
-            }
-            
-            jugadorActual.setPosicion(nuevaPosicion);
-            Casilla casillaActual = partida.getTablero().getCasilla(nuevaPosicion);
-            
-            String mensaje = String.format("%s sacó %d + %d = %d y cayó en %s", 
-                jugadorActual.getNombre(), valores[0], valores[1], 
-                dado.getSuma(), casillaActual.getNombre());
-            
-            partida.agregarHistorial(mensaje);
-            notificarMensaje(mensaje);
-            
-            // Verificar el tipo de casilla y ejecutar acción
-            ejecutarAccionCasilla(casillaActual, jugadorActual);
-            
-            notificarActualizacion();
-        } else {
-            notificarMensaje("Ya has lanzado los dados este turno");
+        if (partida.isJuegoTerminado()) {
+            notificarMensaje("El juego ha terminado.");
+            return;
+        }
+
+        if (dadosLanzados) {
+            notificarMensaje("Ya has lanzado los dados en este turno.");
+            return;
+        }
+
+        IJugador jugador = partida.getJugadorActual();
+
+        // Si está en la cárcel, se maneja de forma especial
+        if (jugador.isEnCarcel()) {
+            // Mostrar diálogo de cárcel si aún no ha decidido
+            notificarEstadoCarcel(jugador);
+            return;
+        }
+
+        realizarTirada(jugador);
+    }
+
+    private void realizarTirada(IJugador jugador) {
+        int[] resultados = partida.getDado().lanzar();
+        dadosLanzados = true;
+
+        notificarDadosLanzados(resultados[0], resultados[1]);
+        String mensajeDados = jugador.getNombre() + " ha sacado " + resultados[0] + " y " + resultados[1];
+        partida.agregarHistorial(mensajeDados);
+        notificarMensaje(mensajeDados);
+
+        boolean esDoble = partida.getDado().esDoble();
+
+        // Mover al jugador
+        moverJugador(jugador, partida.getDado().getSuma());
+
+        // Si saca dobles, en teoría podría volver a tirar,
+        // pero para simplificar el flujo interactivo, por ahora solo notificamos.
+        // En una versión más avanzada se permitiría tirar de nuevo si no son 3 dobles.
+        if (esDoble) {
+            partida.agregarHistorial("¡Dobles! " + jugador.getNombre() + " ha sacado dobles.");
+            notificarMensaje("¡Has sacado dobles!");
         }
     }
-    
-    private void ejecutarAccionCasilla(Casilla casilla, IJugador jugador) {
-        if (casilla instanceof Propiedad) {
-            Propiedad propiedad = (Propiedad) casilla;
-            if (!propiedad.tienePropietario()) {
-                // Notificar que debe decidir si comprar
+
+    private void moverJugador(IJugador jugador, int casillas) {
+        // Mover jugador
+        jugador.mover(casillas, partida.getTablero().getTotalCasillas());
+
+        // Verificar si pasó por salida
+        if (jugador.pasoPorSalida()) {
+            String msg = CasillaEspecial.procesarSalida(jugador, true);
+            partida.agregarHistorial(msg);
+            notificarMensaje(msg);
+        }
+
+        // Obtener casilla actual y ejecutar acción
+        Casilla casillaActual = partida.getTablero().getCasilla(jugador.getPosicion());
+        notificarMensaje(jugador.getNombre() + " cae en " + casillaActual.getNombre());
+
+        notificarActualizacion();
+        ejecutarAccionCasilla(casillaActual, jugador);
+    }
+
+    public void ejecutarAccionCasilla(Casilla casilla, IJugador jugador) {
+        switch (casilla.getTipo()) {
+            case PROPIEDAD:
+                gestionarPropiedad((Propiedad) casilla, jugador);
+                break;
+
+            case SUERTE:
+                gestionarCartaSuerte(jugador);
+                break;
+
+            case COMUNIDAD:
+                gestionarCartaComunidad(jugador);
+                break;
+
+            case IMPUESTO:
+                gestionarImpuesto((CasillaEspecial) casilla, jugador);
+                break;
+
+            case IR_CARCEL:
+                String msgCarcel = CasillaEspecial.procesarIrACarcel(jugador);
+                partida.agregarHistorial(msgCarcel);
+                notificarMensaje(msgCarcel);
+                notificarActualizacion();
+                break;
+
+            case PARKING:
+                notificarMensaje(jugador.getNombre() + " descansa en el Parking Gratuito.");
+                break;
+
+            case CARCEL:
+                notificarMensaje(jugador.getNombre() + " está de visita en la Cárcel.");
+                break;
+
+            case SALIDA:
+                notificarMensaje(jugador.getNombre() + " está en la Salida.");
+                break;
+
+            default:
+                break;
+        }
+    }
+
+    // ===== GESTIÓN DE PROPIEDADES =====
+
+    private void gestionarPropiedad(Propiedad propiedad, IJugador jugador) {
+        if (propiedad.estaDisponible()) {
+            // Ofrecer compra si tiene dinero
+            if (jugador.puedePermitirse(propiedad.getPrecio())) {
                 notificarOfertaPropiedad(propiedad, jugador);
-            } else if (propiedad.getPropietario() != jugador) {
-                // Pagar alquiler
-                int alquiler = propiedad.getAlquiler();
-                jugador.restarDinero(alquiler);
-                propiedad.getPropietario().sumarDinero(alquiler);
-                String msg = String.format("%s pagó $%d de alquiler a %s", 
-                    jugador.getNombre(), alquiler, propiedad.getPropietario().getNombre());
-                partida.agregarHistorial(msg);
-                notificarMensaje(msg);
+            } else {
+                notificarMensaje("No tienes suficiente dinero para comprar " + propiedad.getNombre());
             }
-        } else if (casilla.getTipo() == Casilla.TipoCasilla.SUERTE || 
-                   casilla.getTipo() == Casilla.TipoCasilla.COMUNIDAD) {
-            // Mostrar carta
-            String tipoCarta = casilla.getTipo() == Casilla.TipoCasilla.SUERTE ? "SUERTE" : "COMUNIDAD";
-            notificarCartaEvento(tipoCarta);
+        } else if (!propiedad.getPropietario().equals(jugador)) {
+            // Pagar alquiler
+            boolean tieneGrupo = tieneGrupoCompleto(propiedad.getPropietario(), propiedad.getGrupoColor());
+            int alquiler = propiedad.cobrarAlquiler(jugador, tieneGrupo);
+
+            String msg = jugador.getNombre() + " paga " + alquiler + " EUR de alquiler a "
+                    + propiedad.getPropietario().getNombre();
+            partida.agregarHistorial(msg);
+            notificarMensaje(msg);
+            notificarActualizacion();
+
+            verificarBancarrota(jugador);
         }
     }
-    
-    private void notificarOfertaPropiedad(Propiedad propiedad, IJugador jugador) {
-        for (ObservadorJuego obs : observadores) {
-            if (obs instanceof ObservadorExtendido) {
-                ((ObservadorExtendido) obs).onOfertaPropiedad(propiedad, jugador);
-            }
-        }
+
+    private boolean tieneGrupoCompleto(IJugador propietario, java.awt.Color color) {
+        long tiene = propietario.getPropiedades().stream()
+                .filter(p -> p.getGrupoColor().equals(color))
+                .count();
+
+        long total = partida.getTablero().getCasillas().stream()
+                .filter(c -> c instanceof Propiedad && ((Propiedad) c).getGrupoColor().equals(color))
+                .count();
+
+        return tiene == total && total > 0;
     }
-    
-    private void notificarCartaEvento(String tipoCarta) {
-        for (ObservadorJuego obs : observadores) {
-            if (obs instanceof ObservadorExtendido) {
-                ((ObservadorExtendido) obs).onCartaEvento(tipoCarta);
-            }
-        }
-    }
-    
-    public interface ObservadorExtendido extends ObservadorJuego {
-        void onOfertaPropiedad(Propiedad propiedad, IJugador jugador);
-        void onCartaEvento(String tipoCarta);
-    }
-    
+
     @Override
     public void comprarPropiedad() {
-        IJugador jugadorActual = partida.getJugadorActual();
-        Casilla casillaActual = partida.getTablero().getCasilla(jugadorActual.getPosicion());
-        
-        if (casillaActual instanceof Propiedad) {
-            Propiedad propiedad = (Propiedad) casillaActual;
-            
-            if (!propiedad.tienePropietario()) {
-                if (jugadorActual.getDinero() >= propiedad.getPrecio()) {
-                    jugadorActual.restarDinero(propiedad.getPrecio());
-                    propiedad.setPropietario(jugadorActual);
-                    jugadorActual.agregarPropiedad(propiedad);
-                    
-                    String mensaje = String.format("%s compró %s por $%d", 
-                        jugadorActual.getNombre(), propiedad.getNombre(), propiedad.getPrecio());
-                    
-                    partida.agregarHistorial(mensaje);
-                    notificarPropiedadComprada(propiedad, jugadorActual);
-                    notificarMensaje(mensaje);
-                    notificarActualizacion();
-                } else {
-                    notificarMensaje("No tienes suficiente dinero para comprar esta propiedad");
-                }
-            } else {
-                notificarMensaje("Esta propiedad ya tiene dueño");
+        IJugador jugador = partida.getJugadorActual();
+        Casilla casilla = partida.getTablero().getCasilla(jugador.getPosicion());
+
+        if (casilla instanceof Propiedad) {
+            Propiedad propiedad = (Propiedad) casilla;
+            if (propiedad.comprar(jugador)) {
+                String msg = jugador.getNombre() + " ha comprado " + propiedad.getNombre() + " por "
+                        + propiedad.getPrecio() + " EUR";
+                partida.agregarHistorial(msg);
+                notificarPropiedadComprada(propiedad, jugador);
+                notificarMensaje(msg);
             }
-        } else {
-            notificarMensaje("No puedes comprar esta casilla");
         }
     }
-    
+
+    // ===== GESTIÓN DE CARTAS =====
+
+    private void gestionarCartaSuerte(IJugador jugador) {
+        CartaSuerte carta = partida.getMazoSuerte().sacarCartaSuerte();
+        procesarCarta(carta, jugador, "SUERTE");
+    }
+
+    private void gestionarCartaComunidad(IJugador jugador) {
+        CartaSuerte carta = partida.getMazoSuerte().sacarCartaComunidad();
+        procesarCarta(carta, jugador, "CAJA DE COMUNIDAD");
+    }
+
+    private void procesarCarta(CartaSuerte carta, IJugador jugador, String tipo) {
+        notificarCartaEvento(tipo, carta.getDescripcion(), carta.aplicarEfecto(jugador));
+        partida.agregarHistorial(jugador.getNombre() + " saca carta de " + tipo + ": " + carta.getDescripcion());
+        notificarActualizacion();
+
+        if (carta.getTipoEfecto() == CartaSuerte.TipoEfecto.MOVER_CASILLAS ||
+                carta.getTipoEfecto() == CartaSuerte.TipoEfecto.IR_A_CASILLA) {
+
+            Casilla nuevaCasilla = partida.getTablero().getCasilla(jugador.getPosicion());
+            if (nuevaCasilla.getTipo() != TipoCasilla.SUERTE && nuevaCasilla.getTipo() != TipoCasilla.COMUNIDAD) {
+                ejecutarAccionCasilla(nuevaCasilla, jugador);
+            }
+        }
+
+        verificarBancarrota(jugador);
+    }
+
+    // ===== GESTIÓN DE IMPUESTOS =====
+
+    private void gestionarImpuesto(CasillaEspecial casilla, IJugador jugador) {
+        int monto = casilla.getMontoImpuesto();
+        notificarPagoImpuesto(casilla.getNombre(), monto, jugador);
+
+        String msg = casilla.cobrarImpuesto(jugador);
+        partida.agregarHistorial(msg);
+        notificarMensaje(msg);
+        notificarActualizacion();
+
+        verificarBancarrota(jugador);
+    }
+
+    // ===== GESTIÓN DE CÁRCEL =====
+
+    @Override
+    public void pagarFianza() {
+        IJugador jugador = partida.getJugadorActual();
+        if (jugador.isEnCarcel() && !dadosLanzados) {
+            String msg = CasillaEspecial.pagarFianza(jugador);
+            partida.agregarHistorial(msg);
+            notificarMensaje(msg);
+            notificarActualizacion();
+
+            realizarTirada(jugador);
+        }
+    }
+
+    @Override
+    public void intentarDobles() {
+        IJugador jugador = partida.getJugadorActual();
+        if (jugador.isEnCarcel() && !dadosLanzados) {
+            int[] resultados = partida.getDado().lanzar();
+            dadosLanzados = true;
+            notificarDadosLanzados(resultados[0], resultados[1]);
+
+            boolean esDoble = partida.getDado().esDoble();
+            String msg = CasillaEspecial.procesarTurnoCarcel(jugador, esDoble);
+            partida.agregarHistorial(msg);
+            notificarMensaje(msg);
+
+            if (esDoble) {
+                moverJugador(jugador, partida.getDado().getSuma());
+            } else {
+                notificarMensaje("No sacaste dobles. Te quedas en la cárcel.");
+            }
+
+            verificarBancarrota(jugador);
+            notificarActualizacion();
+        }
+    }
+
+    // ===== CONTROL DE TURNOS Y FIN DE JUEGO =====
+
     @Override
     public void finalizarTurno() {
-        if (dadosLanzados) {
-            partida.siguienteTurno();
-            dadosLanzados = false;
-            IJugador siguienteJugador = partida.getJugadorActual();
-            
-            String mensaje = "Turno de " + siguienteJugador.getNombre();
-            partida.agregarHistorial(mensaje);
-            notificarCambioTurno(siguienteJugador);
-            notificarMensaje(mensaje);
-            notificarActualizacion();
-        } else {
-            notificarMensaje("Debes lanzar los dados antes de finalizar tu turno");
+        if (!dadosLanzados && !partida.getJugadorActual().isEnCarcel()) {
+            notificarMensaje("¡Debes lanzar los dados antes de terminar tu turno!");
+            return;
+        }
+
+        dadosLanzados = false;
+        partida.siguienteTurno();
+
+        IJugador siguiente = partida.getJugadorActual();
+        notificarCambioTurno(siguiente);
+
+        if (siguiente.isEnCarcel()) {
+            notificarMensaje(siguiente.getNombre() + " está en la cárcel.");
+            notificarEstadoCarcel(siguiente);
         }
     }
-    
+
+    private void verificarBancarrota(IJugador jugador) {
+        if (partida.verificarBancarrota(jugador)) {
+            notificarMensaje("¡" + jugador.getNombre() + " HA QUEBRADO!");
+            notificarActualizacion();
+
+            if (partida.isJuegoTerminado()) {
+                notificarMensaje("¡FIN DEL JUEGO! Ganador: " + partida.getGanador().getNombre());
+            }
+        }
+    }
+
     @Override
     public Partida getPartida() {
         return partida;
     }
-    
-    @Override
-    public void agregarObservador(ObservadorJuego observador) {
-        if (!observadores.contains(observador)) {
-            observadores.add(observador);
-        }
+
+    // ===== PATRÓN OBSERVER =====
+
+    public interface ObservadorExtendido {
+        void onActualizacionJuego();
+
+        void onCambioTurno(IJugador jugador);
+
+        void onDadosLanzados(int dado1, int dado2);
+
+        void onPropiedadComprada(Propiedad propiedad, IJugador jugador);
+
+        void onMensaje(String mensaje);
+
+        void onOfertaPropiedad(Propiedad propiedad, IJugador jugador);
+
+        void onCartaEvento(String tipoCarta, String descripcion, String efecto);
+
+        void onPagoImpuesto(String nombreCasilla, int monto, IJugador jugador);
+
+        void onEstadoCarcel(IJugador jugador, int turnos);
     }
-    
+
     @Override
-    public void eliminarObservador(ObservadorJuego observador) {
+    public void agregarObservador(ObservadorExtendido observador) {
+        observadores.add(observador);
+    }
+
+    @Override
+    public void eliminarObservador(ObservadorExtendido observador) {
         observadores.remove(observador);
     }
-    
+
+    // Métodos privados de notificación unificados
+
+    private void notificarEstadoCarcel(IJugador jug) {
+        for (ObservadorExtendido obs : observadores) {
+            obs.onEstadoCarcel(jug, jug.getTurnosEnCarcel());
+        }
+    }
+
     private void notificarActualizacion() {
-        for (ObservadorJuego obs : observadores) {
+        for (ObservadorExtendido obs : observadores)
             obs.onActualizacionJuego();
-        }
     }
-    
+
     private void notificarCambioTurno(IJugador jugador) {
-        for (ObservadorJuego obs : observadores) {
+        for (ObservadorExtendido obs : observadores)
             obs.onCambioTurno(jugador);
-        }
     }
-    
-    private void notificarDadosLanzados(int dado1, int dado2) {
-        for (ObservadorJuego obs : observadores) {
-            obs.onDadosLanzados(dado1, dado2);
-        }
+
+    private void notificarDadosLanzados(int d1, int d2) {
+        for (ObservadorExtendido obs : observadores)
+            obs.onDadosLanzados(d1, d2);
     }
-    
-    private void notificarPropiedadComprada(Propiedad propiedad, IJugador jugador) {
-        for (ObservadorJuego obs : observadores) {
-            obs.onPropiedadComprada(propiedad, jugador);
-        }
+
+    private void notificarPropiedadComprada(Propiedad prop, IJugador jug) {
+        for (ObservadorExtendido obs : observadores)
+            obs.onPropiedadComprada(prop, jug);
     }
-    
-    private void notificarMensaje(String mensaje) {
-        for (ObservadorJuego obs : observadores) {
-            obs.onMensaje(mensaje);
-        }
+
+    private void notificarMensaje(String msg) {
+        for (ObservadorExtendido obs : observadores)
+            obs.onMensaje(msg);
+    }
+
+    private void notificarOfertaPropiedad(Propiedad prop, IJugador jug) {
+        for (ObservadorExtendido obs : observadores)
+            obs.onOfertaPropiedad(prop, jug);
+    }
+
+    private void notificarCartaEvento(String tipo, String desc, String efecto) {
+        for (ObservadorExtendido obs : observadores)
+            obs.onCartaEvento(tipo, desc, efecto);
+    }
+
+    private void notificarPagoImpuesto(String nombre, int monto, IJugador jug) {
+        for (ObservadorExtendido obs : observadores)
+            obs.onPagoImpuesto(nombre, monto, jug);
     }
 }

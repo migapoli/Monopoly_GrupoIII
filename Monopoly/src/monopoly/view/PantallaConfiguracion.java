@@ -6,38 +6,51 @@ import monopoly.model.tablero.Partida;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
+import javax.swing.border.LineBorder;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Pantalla de configuración inicial del juego Megapoly.
+ * Permite seleccionar el número de jugadores, sus nombres y símbolos.
+ */
 public class PantallaConfiguracion extends JFrame {
     private Partida partida;
     private List<JTextField> camposNombres;
-    private List<JComboBox<String>> combosColores;
-    private JSpinner spinnerJugadores;
+    private List<JComboBox<String>> combosSimbolos;
+    private JComboBox<Integer> comboNumJugadores;
     private JPanel panelJugadores;
     
-    private static final Color[] COLORES_DISPONIBLES = {
-        Color.RED, Color.BLUE, Color.GREEN, Color.YELLOW,
-        new Color(255, 0, 255), new Color(255, 165, 0) // Magenta y Naranja
+    // Colores del diseño
+    private static final Color COLOR_FONDO = new Color(200, 200, 210);
+    private static final Color COLOR_PANEL_JUGADOR = new Color(245, 245, 248);
+    private static final Color COLOR_TITULO = new Color(35, 45, 65);
+    private static final Color COLOR_BOTON = new Color(45, 55, 75);
+    private static final Color COLOR_LINEA = new Color(45, 55, 75);
+    
+    // Símbolos disponibles con emojis
+    private static final String[] SIMBOLOS_DISPONIBLES = {
+        "Sombrero 🎩", "Coche 🚗", "Perro 🐕", "Barco ⛵"
     };
     
-    private static final String[] NOMBRES_COLORES = {
-        "Rojo", "Azul", "Verde", "Amarillo", "Magenta", "Naranja"
+    // Colores asociados a cada símbolo
+    private static final Color[] COLORES_DISPONIBLES = {
+        Color.RED, Color.BLUE, Color.GREEN, Color.YELLOW
     };
     
     public PantallaConfiguracion() {
         this.partida = new Partida();
         this.camposNombres = new ArrayList<>();
-        this.combosColores = new ArrayList<>();
+        this.combosSimbolos = new ArrayList<>();
         
         inicializarVentana();
         inicializarComponentes();
     }
     
     private void inicializarVentana() {
-        setTitle("Monopoly - Configuración de Partida");
-        setSize(600, 700);
+        setTitle("Megapoly - Configuración de Partida");
+        setSize(900, 750);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
         setResizable(false);
@@ -50,9 +63,8 @@ public class PantallaConfiguracion extends JFrame {
     }
     
     private void inicializarComponentes() {
-        JPanel panelPrincipal = new JPanel(new BorderLayout(15, 15));
-        panelPrincipal.setBorder(new EmptyBorder(20, 20, 20, 20));
-        panelPrincipal.setBackground(new Color(240, 248, 255));
+        JPanel panelPrincipal = new JPanel(new BorderLayout());
+        panelPrincipal.setBackground(COLOR_FONDO);
         
         // Panel superior: Título
         JPanel panelTitulo = crearPanelTitulo();
@@ -60,66 +72,100 @@ public class PantallaConfiguracion extends JFrame {
         // Panel central: Configuración
         JPanel panelConfig = crearPanelConfiguracion();
         
-        // Panel inferior: Botones
-        JPanel panelBotones = crearPanelBotones();
+        // Panel inferior: Botones y footer
+        JPanel panelInferior = crearPanelInferior();
         
         panelPrincipal.add(panelTitulo, BorderLayout.NORTH);
         panelPrincipal.add(panelConfig, BorderLayout.CENTER);
-        panelPrincipal.add(panelBotones, BorderLayout.SOUTH);
+        panelPrincipal.add(panelInferior, BorderLayout.SOUTH);
         
         add(panelPrincipal);
     }
     
     private JPanel crearPanelTitulo() {
         JPanel panel = new JPanel();
-        panel.setBackground(new Color(240, 248, 255));
+        panel.setBackground(COLOR_FONDO);
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+        panel.setBorder(new EmptyBorder(30, 0, 10, 0));
         
-        JLabel lblTitulo = new JLabel("MEGAPOLY: The Game");
-        lblTitulo.setFont(new Font("Arial", Font.BOLD, 40));
-        lblTitulo.setForeground(Color.BLACK);
-        lblTitulo.setAlignmentX(Component.CENTER_ALIGNMENT);
+        // Panel para el título principal
+        JPanel panelTextoTitulo = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 0));
+        panelTextoTitulo.setBackground(COLOR_FONDO);
         
-        panel.add(lblTitulo);
-        panel.add(Box.createRigidArea(new Dimension(0, 20)));
+        // "MEGAPOLY:" en negrita
+        JLabel lblMegapoly = new JLabel("MEGAPOLY: ");
+        lblMegapoly.setFont(new Font("Georgia", Font.BOLD, 48));
+        lblMegapoly.setForeground(COLOR_TITULO);
+        
+        // "THE GAME" en cursiva
+        JLabel lblTheGame = new JLabel("THE GAME");
+        lblTheGame.setFont(new Font("Georgia", Font.BOLD | Font.ITALIC, 48));
+        lblTheGame.setForeground(COLOR_TITULO);
+        
+        panelTextoTitulo.add(lblMegapoly);
+        panelTextoTitulo.add(lblTheGame);
+        
+        // Línea decorativa
+        JPanel lineaDecorativa = new JPanel() {
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                Graphics2D g2 = (Graphics2D) g;
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                g2.setColor(COLOR_LINEA);
+                g2.setStroke(new BasicStroke(2));
+                int y = getHeight() / 2;
+                g2.drawLine(50, y, getWidth() - 50, y);
+            }
+        };
+        lineaDecorativa.setPreferredSize(new Dimension(800, 20));
+        lineaDecorativa.setBackground(COLOR_FONDO);
+        
+        panel.add(panelTextoTitulo);
+        panel.add(Box.createRigidArea(new Dimension(0, 10)));
+        panel.add(lineaDecorativa);
         
         return panel;
     }
     
     private JPanel crearPanelConfiguracion() {
-        JPanel panel = new JPanel(new BorderLayout(10, 10));
-        panel.setBackground(new Color(240, 248, 255));
+        JPanel panel = new JPanel(new BorderLayout(10, 15));
+        panel.setBackground(COLOR_FONDO);
+        panel.setBorder(new EmptyBorder(20, 40, 20, 40));
         
         // Panel para seleccionar número de jugadores
-        JPanel panelNumJugadores = new JPanel(new FlowLayout(FlowLayout.CENTER));
-        panelNumJugadores.setBackground(new Color(240, 248, 255));
+        JPanel panelNumJugadores = new JPanel(new FlowLayout(FlowLayout.CENTER, 15, 10));
+        panelNumJugadores.setBackground(COLOR_FONDO);
         
         JLabel lblNumJugadores = new JLabel("Número de jugadores:");
-        lblNumJugadores.setFont(new Font("Arial", Font.PLAIN, 14));
+        lblNumJugadores.setFont(new Font("Arial", Font.BOLD, 14));
+        lblNumJugadores.setForeground(COLOR_TITULO);
         
-        spinnerJugadores = new JSpinner(new SpinnerNumberModel(2, 2, 6, 1));
-        spinnerJugadores.setFont(new Font("Arial", Font.PLAIN, 14));
-        spinnerJugadores.setPreferredSize(new Dimension(80, 30));
-        spinnerJugadores.addChangeListener(e -> actualizarPanelJugadores());
+        // Máximo 4 jugadores
+        Integer[] numeros = {2, 3, 4};
+        comboNumJugadores = new JComboBox<>(numeros);
+        comboNumJugadores.setSelectedItem(4);
+        comboNumJugadores.setFont(new Font("Arial", Font.PLAIN, 14));
+        comboNumJugadores.setPreferredSize(new Dimension(60, 30));
+        comboNumJugadores.addActionListener(e -> actualizarPanelJugadores());
         
         panelNumJugadores.add(lblNumJugadores);
-        panelNumJugadores.add(spinnerJugadores);
+        panelNumJugadores.add(comboNumJugadores);
         
         // Panel para configurar jugadores
         panelJugadores = new JPanel();
-        panelJugadores.setLayout(new BoxLayout(panelJugadores, BoxLayout.Y_AXIS));
-        panelJugadores.setBackground(new Color(240, 248, 255));
-        panelJugadores.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        panelJugadores.setBackground(COLOR_FONDO);
         
         JScrollPane scrollPane = new JScrollPane(panelJugadores);
         scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+        scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         scrollPane.setBorder(null);
-        scrollPane.setBackground(new Color(240, 248, 255));
+        scrollPane.getViewport().setBackground(COLOR_FONDO);
         
         panel.add(panelNumJugadores, BorderLayout.NORTH);
         panel.add(scrollPane, BorderLayout.CENTER);
         
-        // Inicializar con 2 jugadores
+        // Inicializar con 4 jugadores por defecto
         actualizarPanelJugadores();
         
         return panel;
@@ -128,21 +174,30 @@ public class PantallaConfiguracion extends JFrame {
     private void actualizarPanelJugadores() {
         panelJugadores.removeAll();
         camposNombres.clear();
-        combosColores.clear();
+        combosSimbolos.clear();
         
-        int numJugadores = (Integer) spinnerJugadores.getValue();
+        int numJugadores = (Integer) comboNumJugadores.getSelectedItem();
         
-        // Crear una cuadrícula de 2 columnas para los jugadores
-        JPanel gridPanel = new JPanel(new GridLayout(0, 2, 15, 15));
-        gridPanel.setBackground(new Color(240, 248, 255));
+        // Calcular filas necesarias (2 jugadores por fila)
+        int filas = (int) Math.ceil(numJugadores / 2.0);
         
-        for (int i = 0; i < numJugadores; i++) {
-            JPanel panelJugador = crearPanelConfigJugador(i + 1);
-            gridPanel.add(panelJugador);
+        panelJugadores.setLayout(new GridBagLayout());
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(10, 10, 10, 10);
+        gbc.fill = GridBagConstraints.BOTH;
+        gbc.weightx = 1.0;
+        gbc.weighty = 1.0;
+        
+        int jugadorIndex = 0;
+        for (int fila = 0; fila < filas; fila++) {
+            for (int col = 0; col < 2 && jugadorIndex < numJugadores; col++) {
+                JPanel panelJugador = crearPanelConfigJugador(jugadorIndex + 1);
+                gbc.gridx = col;
+                gbc.gridy = fila;
+                panelJugadores.add(panelJugador, gbc);
+                jugadorIndex++;
+            }
         }
-        
-        panelJugadores.add(gridPanel);
-        panelJugadores.add(Box.createVerticalGlue());
         
         panelJugadores.revalidate();
         panelJugadores.repaint();
@@ -151,29 +206,56 @@ public class PantallaConfiguracion extends JFrame {
     private JPanel crearPanelConfigJugador(int numero) {
         JPanel panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-        panel.setBackground(new Color(220, 220, 220));
+        panel.setBackground(COLOR_PANEL_JUGADOR);
         panel.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createLineBorder(Color.GRAY, 1),
-            new EmptyBorder(15, 15, 15, 15)
+            new LineBorder(new Color(180, 180, 185), 1, true),
+            new EmptyBorder(20, 25, 20, 25)
         ));
+        panel.setPreferredSize(new Dimension(350, 150));
         
         // Título del jugador
         JLabel lblTitulo = new JLabel("-- JUGADOR " + numero + ": --");
-        lblTitulo.setFont(new Font("Arial", Font.BOLD, 12));
+        lblTitulo.setFont(new Font("Arial", Font.BOLD, 14));
+        lblTitulo.setForeground(COLOR_TITULO);
         lblTitulo.setAlignmentX(Component.CENTER_ALIGNMENT);
         
         panel.add(lblTitulo);
-        panel.add(Box.createRigidArea(new Dimension(0, 15)));
+        panel.add(Box.createRigidArea(new Dimension(0, 20)));
         
         // Panel Nombre
-        JPanel panelNombre = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0));
-        panelNombre.setBackground(new Color(220, 220, 220));
+        JPanel panelNombre = new JPanel(new FlowLayout(FlowLayout.LEFT, 15, 5));
+        panelNombre.setBackground(COLOR_PANEL_JUGADOR);
+        panelNombre.setMaximumSize(new Dimension(Integer.MAX_VALUE, 40));
         
         JLabel lblNombre = new JLabel("Nombre:");
-        lblNombre.setFont(new Font("Arial", Font.PLAIN, 12));
+        lblNombre.setFont(new Font("Arial", Font.BOLD, 12));
+        lblNombre.setForeground(COLOR_TITULO);
+        lblNombre.setPreferredSize(new Dimension(60, 25));
         
-        JTextField txtNombre = new JTextField("Jugador " + numero, 12);
+        JTextField txtNombre = new JTextField();
         txtNombre.setFont(new Font("Arial", Font.PLAIN, 12));
+        txtNombre.setPreferredSize(new Dimension(180, 28));
+        txtNombre.setBorder(BorderFactory.createCompoundBorder(
+            new LineBorder(new Color(200, 200, 200), 1),
+            new EmptyBorder(2, 8, 2, 8)
+        ));
+        // Placeholder
+        txtNombre.setText("Escribe tu nombre");
+        txtNombre.setForeground(Color.GRAY);
+        txtNombre.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusGained(java.awt.event.FocusEvent evt) {
+                if (txtNombre.getText().equals("Escribe tu nombre")) {
+                    txtNombre.setText("");
+                    txtNombre.setForeground(Color.BLACK);
+                }
+            }
+            public void focusLost(java.awt.event.FocusEvent evt) {
+                if (txtNombre.getText().isEmpty()) {
+                    txtNombre.setText("Escribe tu nombre");
+                    txtNombre.setForeground(Color.GRAY);
+                }
+            }
+        });
         camposNombres.add(txtNombre);
         
         panelNombre.add(lblNombre);
@@ -183,17 +265,21 @@ public class PantallaConfiguracion extends JFrame {
         panel.add(Box.createRigidArea(new Dimension(0, 10)));
         
         // Panel Símbolo
-        JPanel panelSimbolo = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0));
-        panelSimbolo.setBackground(new Color(220, 220, 220));
+        JPanel panelSimbolo = new JPanel(new FlowLayout(FlowLayout.LEFT, 15, 5));
+        panelSimbolo.setBackground(COLOR_PANEL_JUGADOR);
+        panelSimbolo.setMaximumSize(new Dimension(Integer.MAX_VALUE, 40));
         
         JLabel lblSimbolo = new JLabel("Símbolo:");
-        lblSimbolo.setFont(new Font("Arial", Font.PLAIN, 12));
+        lblSimbolo.setFont(new Font("Arial", Font.BOLD, 12));
+        lblSimbolo.setForeground(COLOR_TITULO);
+        lblSimbolo.setPreferredSize(new Dimension(60, 25));
         
-        JComboBox<String> comboSimbolo = new JComboBox<>(NOMBRES_COLORES);
-        comboSimbolo.setSelectedIndex(numero - 1);
-        comboSimbolo.setFont(new Font("Arial", Font.PLAIN, 12));
-        comboSimbolo.setRenderer(new ColorComboBoxRenderer());
-        combosColores.add(comboSimbolo);
+        JComboBox<String> comboSimbolo = new JComboBox<>(SIMBOLOS_DISPONIBLES);
+        comboSimbolo.setSelectedIndex((numero - 1) % SIMBOLOS_DISPONIBLES.length);
+        comboSimbolo.setFont(new Font("Segoe UI Emoji", Font.PLAIN, 12));
+        comboSimbolo.setPreferredSize(new Dimension(180, 28));
+        comboSimbolo.setBackground(Color.WHITE);
+        combosSimbolos.add(comboSimbolo);
         
         panelSimbolo.add(lblSimbolo);
         panelSimbolo.add(comboSimbolo);
@@ -203,22 +289,66 @@ public class PantallaConfiguracion extends JFrame {
         return panel;
     }
     
-    private JPanel crearPanelBotones() {
-        JPanel panel = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 10));
-        panel.setBackground(new Color(240, 248, 255));
+    private JPanel crearPanelInferior() {
+        JPanel panel = new JPanel();
+        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+        panel.setBackground(COLOR_FONDO);
+        panel.setBorder(new EmptyBorder(10, 0, 20, 0));
         
-        JButton btnIniciar = new JButton("INICIAR PARTIDA");
-        btnIniciar.setFont(new Font("Arial", Font.BOLD, 14));
-        btnIniciar.setBackground(new Color(45, 50, 70));
+        // Panel del botón
+        JPanel panelBoton = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        panelBoton.setBackground(COLOR_FONDO);
+        
+        JButton btnIniciar = new JButton("INICIAR PARTIDA") {
+            @Override
+            protected void paintComponent(Graphics g) {
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                
+                if (getModel().isPressed()) {
+                    g2.setColor(COLOR_BOTON.darker());
+                } else if (getModel().isRollover()) {
+                    g2.setColor(COLOR_BOTON.brighter());
+                } else {
+                    g2.setColor(COLOR_BOTON);
+                }
+                
+                g2.fillRoundRect(0, 0, getWidth(), getHeight(), 10, 10);
+                
+                g2.setColor(Color.WHITE);
+                g2.setFont(getFont());
+                FontMetrics fm = g2.getFontMetrics();
+                int x = (getWidth() - fm.stringWidth(getText())) / 2;
+                int y = (getHeight() + fm.getAscent() - fm.getDescent()) / 2;
+                g2.drawString(getText(), x, y);
+                
+                g2.dispose();
+            }
+        };
+        btnIniciar.setFont(new Font("Arial", Font.BOLD, 16));
         btnIniciar.setForeground(Color.WHITE);
-        btnIniciar.setFocusPainted(false);
-        btnIniciar.setOpaque(true);
+        btnIniciar.setPreferredSize(new Dimension(220, 50));
+        btnIniciar.setContentAreaFilled(false);
         btnIniciar.setBorderPainted(false);
-        btnIniciar.setPreferredSize(new Dimension(200, 45));
-        btnIniciar.setBorder(BorderFactory.createEmptyBorder(10, 30, 10, 30));
+        btnIniciar.setFocusPainted(false);
+        btnIniciar.setCursor(new Cursor(Cursor.HAND_CURSOR));
         btnIniciar.addActionListener(e -> iniciarPartida());
         
-        panel.add(btnIniciar);
+        panelBoton.add(btnIniciar);
+        
+        // Panel del footer
+        JPanel panelFooter = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        panelFooter.setBackground(COLOR_FONDO);
+        panelFooter.setBorder(new EmptyBorder(30, 0, 0, 0));
+        
+        JLabel lblFooter = new JLabel("© 2024 Megapoly Inc. All rights reserved.");
+        lblFooter.setFont(new Font("Arial", Font.PLAIN, 11));
+        lblFooter.setForeground(new Color(100, 100, 110));
+        
+        panelFooter.add(lblFooter);
+        
+        panel.add(panelBoton);
+        panel.add(panelFooter);
         
         return panel;
     }
@@ -227,20 +357,36 @@ public class PantallaConfiguracion extends JFrame {
         // Validar nombres
         for (int i = 0; i < camposNombres.size(); i++) {
             String nombre = camposNombres.get(i).getText().trim();
-            if (nombre.isEmpty()) {
+            if (nombre.isEmpty() || nombre.equals("Escribe tu nombre")) {
                 JOptionPane.showMessageDialog(this,
                     "Por favor, ingresa un nombre para el Jugador " + (i + 1),
                     "Error de validación",
                     JOptionPane.ERROR_MESSAGE);
+                camposNombres.get(i).requestFocus();
                 return;
             }
+        }
+        
+        // Validar símbolos únicos
+        List<Integer> simbolosUsados = new ArrayList<>();
+        for (int i = 0; i < combosSimbolos.size(); i++) {
+            int simboloIndex = combosSimbolos.get(i).getSelectedIndex();
+            if (simbolosUsados.contains(simboloIndex)) {
+                JOptionPane.showMessageDialog(this,
+                    "Cada jugador debe tener un símbolo diferente. El Jugador " + (i + 1) + 
+                    " tiene el mismo símbolo que otro jugador.",
+                    "Error de validación",
+                    JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            simbolosUsados.add(simboloIndex);
         }
         
         // Crear jugadores
         for (int i = 0; i < camposNombres.size(); i++) {
             String nombre = camposNombres.get(i).getText().trim();
-            int indiceColor = combosColores.get(i).getSelectedIndex();
-            Color color = COLORES_DISPONIBLES[indiceColor];
+            int indiceSimbolo = combosSimbolos.get(i).getSelectedIndex();
+            Color color = COLORES_DISPONIBLES[indiceSimbolo];
             
             Jugador jugador = new Jugador(nombre, color);
             partida.agregarJugador(jugador);
@@ -256,54 +402,5 @@ public class PantallaConfiguracion extends JFrame {
         // Mostrar ventana principal y cerrar configuración
         ventana.mostrar();
         this.dispose();
-    }
-    
-    // Renderer personalizado para el ComboBox de colores
-    private class ColorComboBoxRenderer extends DefaultListCellRenderer {
-        @Override
-        public Component getListCellRendererComponent(JList<?> list, Object value,
-                                                     int index, boolean isSelected, boolean cellHasFocus) {
-            JLabel label = (JLabel) super.getListCellRendererComponent(
-                list, value, index, isSelected, cellHasFocus);
-            
-            if (index >= 0 && index < COLORES_DISPONIBLES.length) {
-                // Crear un panel con el color
-                JPanel colorPanel = new JPanel();
-                colorPanel.setPreferredSize(new Dimension(20, 20));
-                colorPanel.setBackground(COLORES_DISPONIBLES[index]);
-                colorPanel.setBorder(BorderFactory.createLineBorder(Color.BLACK));
-                
-                label.setIcon(new ColorIcon(COLORES_DISPONIBLES[index]));
-            }
-            
-            return label;
-        }
-    }
-    
-    // Icono personalizado para mostrar colores
-    private class ColorIcon implements Icon {
-        private Color color;
-        
-        public ColorIcon(Color color) {
-            this.color = color;
-        }
-        
-        @Override
-        public void paintIcon(Component c, Graphics g, int x, int y) {
-            g.setColor(color);
-            g.fillRect(x, y, getIconWidth(), getIconHeight());
-            g.setColor(Color.BLACK);
-            g.drawRect(x, y, getIconWidth(), getIconHeight());
-        }
-        
-        @Override
-        public int getIconWidth() {
-            return 20;
-        }
-        
-        @Override
-        public int getIconHeight() {
-            return 20;
-        }
     }
 }
