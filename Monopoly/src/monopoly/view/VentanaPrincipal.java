@@ -7,9 +7,8 @@ import monopoly.model.persistencia.GestorArchivos;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionListener;
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.util.ArrayList;
+import java.util.List;
 
 public class VentanaPrincipal extends JFrame implements ControladorJuego.ObservadorExtendido {
     private ControladorJuego controlador;
@@ -17,9 +16,15 @@ public class VentanaPrincipal extends JFrame implements ControladorJuego.Observa
     private PanelControles panelControles;
     private PanelInfoJugador panelInfoJugador;
     private PanelHistorial panelHistorial;
+    private String nombrePartida;
 
     public VentanaPrincipal(ControladorJuego controlador) {
+        this(controlador, null);
+    }
+
+    public VentanaPrincipal(ControladorJuego controlador, String nombrePartida) {
         this.controlador = controlador;
+        this.nombrePartida = nombrePartida;
         this.controlador.agregarObservador(this);
 
         inicializarVentana();
@@ -27,7 +32,7 @@ public class VentanaPrincipal extends JFrame implements ControladorJuego.Observa
     }
 
     private void inicializarVentana() {
-        setTitle("Megapoly - The Game");
+        setTitle(construirTituloVentana());
         setSize(1400, 900);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
@@ -39,6 +44,14 @@ public class VentanaPrincipal extends JFrame implements ControladorJuego.Observa
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    private String construirTituloVentana() {
+        String tituloBase = "Megapoly - The Game";
+        if (nombrePartida != null && !nombrePartida.isBlank()) {
+            return tituloBase + " - " + nombrePartida.trim();
+        }
+        return tituloBase;
     }
 
     private void inicializarComponentes() {
@@ -106,20 +119,79 @@ public class VentanaPrincipal extends JFrame implements ControladorJuego.Observa
     }
 
     private void guardarPartida() {
-        String nombreArchivo = JOptionPane.showInputDialog(this,
-                "Nombre del archivo para guardar:",
-                "Guardar Partida", JOptionPane.PLAIN_MESSAGE);
+        String nombreArchivo = obtenerNombreParaGuardar();
+        if (nombreArchivo == null || nombreArchivo.trim().isEmpty()) {
+            return;
+        }
 
-        if (nombreArchivo != null && !nombreArchivo.trim().isEmpty()) {
-            boolean exito = GestorArchivos.guardar(controlador.getPartida(), nombreArchivo.trim());
-            if (exito) {
-                JOptionPane.showMessageDialog(this, "Partida guardada correctamente.", "Éxito",
-                        JOptionPane.INFORMATION_MESSAGE);
-                panelHistorial.agregarMensaje("Partida guardada como '" + nombreArchivo + "'");
-            } else {
-                JOptionPane.showMessageDialog(this, "Error al guardar la partida.", "Error", JOptionPane.ERROR_MESSAGE);
+        boolean exito = GestorArchivos.guardar(controlador.getPartida(), nombreArchivo.trim());
+        if (exito) {
+            nombrePartida = nombreArchivo.trim();
+            setTitle(construirTituloVentana());
+            JOptionPane.showMessageDialog(this, "Partida guardada correctamente.", "Éxito",
+                    JOptionPane.INFORMATION_MESSAGE);
+            panelHistorial.agregarMensaje("Partida guardada como '" + nombrePartida + "'");
+        } else {
+            JOptionPane.showMessageDialog(this, "Error al guardar la partida.", "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private String obtenerNombreParaGuardar() {
+        if (nombrePartida != null && !nombrePartida.isBlank()) {
+            int opcion = JOptionPane.showConfirmDialog(this,
+                    "¿Deseas sobrescribir la partida guardada '" + nombrePartida + "'?",
+                    "Guardar Partida",
+                    JOptionPane.YES_NO_CANCEL_OPTION,
+                    JOptionPane.QUESTION_MESSAGE);
+
+            if (opcion == JOptionPane.CANCEL_OPTION || opcion == JOptionPane.CLOSED_OPTION) {
+                return null;
+            }
+
+            if (opcion == JOptionPane.YES_OPTION) {
+                return nombrePartida;
             }
         }
+
+        List<String> partidas = GestorArchivos.listarPartidasGuardadas();
+        List<String> opciones = new ArrayList<>();
+        opciones.add("Nueva partida...");
+        opciones.addAll(partidas);
+
+        String seleccion = (String) JOptionPane.showInputDialog(
+                this,
+                "Selecciona una partida para sobrescribir o crea una nueva:",
+                "Guardar Partida",
+                JOptionPane.PLAIN_MESSAGE,
+                null,
+                opciones.toArray(new String[0]),
+                opciones.get(0));
+
+        if (seleccion == null) {
+            return null;
+        }
+
+        if ("Nueva partida...".equals(seleccion)) {
+            String nombreNuevo = JOptionPane.showInputDialog(this,
+                    "Nombre del archivo para guardar:",
+                    "Guardar Partida", JOptionPane.PLAIN_MESSAGE);
+            if (nombreNuevo == null) {
+                return null;
+            }
+            return nombreNuevo.trim();
+        }
+
+        int confirmacion = JOptionPane.showConfirmDialog(this,
+                "¿Deseas sobrescribir la partida guardada '" + seleccion + "'?",
+                "Guardar Partida",
+                JOptionPane.YES_NO_OPTION,
+                JOptionPane.WARNING_MESSAGE);
+
+        if (confirmacion == JOptionPane.YES_OPTION) {
+            return seleccion.trim();
+        }
+
+        return null;
     }
 
     public void mostrar() {

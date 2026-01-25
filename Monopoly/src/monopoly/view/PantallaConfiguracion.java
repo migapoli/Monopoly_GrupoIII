@@ -1,7 +1,11 @@
 package monopoly.view;
 
 import monopoly.controller.ControladorJuego;
+import monopoly.model.casilla.Casilla;
+import monopoly.model.casilla.Propiedad;
 import monopoly.model.jugador.Jugador;
+import monopoly.model.persistencia.GestorArchivos;
+import monopoly.model.persistencia.GestorArchivos.DatosPartidaGuardada;
 import monopoly.model.tablero.Partida;
 
 import javax.swing.*;
@@ -9,7 +13,9 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
 import java.awt.*;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Pantalla de configuración inicial del juego Megapoly.
@@ -299,7 +305,35 @@ public class PantallaConfiguracion extends JFrame {
         JPanel panelBoton = new JPanel(new FlowLayout(FlowLayout.CENTER));
         panelBoton.setBackground(COLOR_FONDO);
         
-        JButton btnIniciar = new JButton("INICIAR PARTIDA") {
+        JButton btnIniciar = crearBotonAccion("INICIAR PARTIDA", 220);
+        btnIniciar.addActionListener(e -> iniciarPartida());
+
+        JButton btnCargar = crearBotonAccion("CARGAR PARTIDA", 220);
+        btnCargar.addActionListener(e -> cargarPartidaGuardada());
+
+        panelBoton.add(btnIniciar);
+        panelBoton.add(Box.createRigidArea(new Dimension(15, 0)));
+        panelBoton.add(btnCargar);
+        
+        // Panel del footer
+        JPanel panelFooter = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        panelFooter.setBackground(COLOR_FONDO);
+        panelFooter.setBorder(new EmptyBorder(30, 0, 0, 0));
+        
+        JLabel lblFooter = new JLabel("© 2024 Megapoly Inc. All rights reserved.");
+        lblFooter.setFont(new Font("Arial", Font.PLAIN, 11));
+        lblFooter.setForeground(new Color(100, 100, 110));
+        
+        panelFooter.add(lblFooter);
+        
+        panel.add(panelBoton);
+        panel.add(panelFooter);
+        
+        return panel;
+    }
+
+    private JButton crearBotonAccion(String texto, int ancho) {
+        JButton boton = new JButton(texto) {
             @Override
             protected void paintComponent(Graphics g) {
                 Graphics2D g2 = (Graphics2D) g.create();
@@ -325,32 +359,133 @@ public class PantallaConfiguracion extends JFrame {
                 g2.dispose();
             }
         };
-        btnIniciar.setFont(new Font("Arial", Font.BOLD, 16));
-        btnIniciar.setForeground(Color.WHITE);
-        btnIniciar.setPreferredSize(new Dimension(220, 50));
-        btnIniciar.setContentAreaFilled(false);
-        btnIniciar.setBorderPainted(false);
-        btnIniciar.setFocusPainted(false);
-        btnIniciar.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        btnIniciar.addActionListener(e -> iniciarPartida());
-        
-        panelBoton.add(btnIniciar);
-        
-        // Panel del footer
-        JPanel panelFooter = new JPanel(new FlowLayout(FlowLayout.CENTER));
-        panelFooter.setBackground(COLOR_FONDO);
-        panelFooter.setBorder(new EmptyBorder(30, 0, 0, 0));
-        
-        JLabel lblFooter = new JLabel("© 2024 Megapoly Inc. All rights reserved.");
-        lblFooter.setFont(new Font("Arial", Font.PLAIN, 11));
-        lblFooter.setForeground(new Color(100, 100, 110));
-        
-        panelFooter.add(lblFooter);
-        
-        panel.add(panelBoton);
-        panel.add(panelFooter);
-        
-        return panel;
+        boton.setFont(new Font("Arial", Font.BOLD, 16));
+        boton.setForeground(Color.WHITE);
+        boton.setPreferredSize(new Dimension(ancho, 50));
+        boton.setContentAreaFilled(false);
+        boton.setBorderPainted(false);
+        boton.setFocusPainted(false);
+        boton.setCursor(new Cursor(Cursor.HAND_CURSOR));
+
+        return boton;
+    }
+
+    private void cargarPartidaGuardada() {
+        List<String> partidas = GestorArchivos.listarPartidasGuardadas();
+        if (partidas.isEmpty()) {
+            JOptionPane.showMessageDialog(this,
+                "No hay partidas guardadas en la carpeta 'saves'.",
+                "Sin partidas",
+                JOptionPane.INFORMATION_MESSAGE);
+            return;
+        }
+
+        String seleccion = (String) JOptionPane.showInputDialog(
+            this,
+            "Selecciona una partida guardada:",
+            "Cargar Partida",
+            JOptionPane.PLAIN_MESSAGE,
+            null,
+            partidas.toArray(new String[0]),
+            partidas.get(0)
+        );
+
+        if (seleccion == null || seleccion.trim().isEmpty()) {
+            return;
+        }
+
+        DatosPartidaGuardada datos = GestorArchivos.cargar(seleccion.trim());
+        if (datos == null) {
+            JOptionPane.showMessageDialog(this,
+                "No se pudo cargar la partida seleccionada.",
+                "Error",
+                JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        Partida partidaCargada = reconstruirPartida(datos);
+        if (partidaCargada == null) {
+            JOptionPane.showMessageDialog(this,
+                "La partida está corrupta o incompleta.",
+                "Error",
+                JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        ControladorJuego controlador = new ControladorJuego(partidaCargada);
+        VentanaPrincipal ventana = new VentanaPrincipal(controlador);
+        controlador.iniciarPartida();
+        ventana.mostrar();
+        this.dispose();
+    }
+
+    private Partida reconstruirPartida(DatosPartidaGuardada datos) {
+        if (datos == null || datos.datosJugadores == null) {
+            return null;
+        }
+
+        Partida partida = new Partida();
+        Map<String, Jugador> jugadoresPorNombre = new HashMap<>();
+
+        for (GestorArchivos.DatosJugador datoJugador : datos.datosJugadores) {
+            if (datoJugador == null || datoJugador.nombre == null) {
+                continue;
+            }
+
+            Color color = new Color(datoJugador.colorRGB);
+            Jugador jugador = new Jugador(datoJugador.nombre, color);
+            jugador.setDinero(datoJugador.dinero);
+            jugador.setPosicion(datoJugador.posicion);
+            jugador.setEnCarcel(datoJugador.enCarcel);
+            if (datoJugador.enCarcel && datoJugador.turnosEnCarcel > 0) {
+                for (int i = 0; i < datoJugador.turnosEnCarcel; i++) {
+                    jugador.incrementarTurnosEnCarcel();
+                }
+            }
+
+            partida.agregarJugador(jugador);
+            jugadoresPorNombre.put(jugador.getNombre(), jugador);
+        }
+
+        // Limpiar historial generado por agregar jugadores
+        partida.limpiarHistorial();
+
+        // Restaurar propiedades
+        for (GestorArchivos.DatosPropiedad datoProp : datos.propiedades) {
+            Casilla casilla = partida.getTablero().getCasilla(datoProp.posicion);
+            if (casilla instanceof Propiedad) {
+                Propiedad propiedad = (Propiedad) casilla;
+
+                for (int i = 0; i < datoProp.casas; i++) {
+                    propiedad.agregarCasa();
+                }
+
+                if (datoProp.tieneHotel) {
+                    while (propiedad.getCasas() < 4) {
+                        propiedad.agregarCasa();
+                    }
+                    propiedad.construirHotel();
+                }
+
+                if (datoProp.nombrePropietario != null) {
+                    Jugador propietario = jugadoresPorNombre.get(datoProp.nombrePropietario);
+                    if (propietario != null) {
+                        propiedad.setPropietario(propietario);
+                        propietario.agregarPropiedad(propiedad);
+                    }
+                }
+            }
+        }
+
+        // Restaurar historial
+        for (String evento : datos.historial) {
+            partida.agregarHistorial(evento);
+        }
+
+        partida.setTurnoActual(datos.turnoActual);
+        partida.setJuegoTerminado(datos.juegoTerminado);
+
+        return partida;
     }
     
     private void iniciarPartida() {

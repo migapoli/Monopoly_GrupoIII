@@ -1,0 +1,64 @@
+# Partida de Monopoly guardada
+# Fecha: 2026-01-25 15:17:12
+
+[PARTIDA]
+turnoActual=3
+juegoTerminado=false
+
+[JUGADORES]
+cantidad=4
+jugador0.nombre=qewrqw
+jugador0.dinero=1440
+jugador0.posicion=3
+jugador0.color=-65536
+jugador0.enCarcel=false
+jugador0.turnosEnCarcel=0
+jugador0.propiedades=3
+jugador1.nombre=adsfasfd
+jugador1.dinero=1388
+jugador1.posicion=16
+jugador1.color=-16776961
+jugador1.enCarcel=false
+jugador1.turnosEnCarcel=0
+jugador1.propiedades=9
+jugador2.nombre=asdfad
+jugador2.dinero=1492
+jugador2.posicion=9
+jugador2.color=-16711936
+jugador2.enCarcel=false
+jugador2.turnosEnCarcel=0
+jugador2.propiedades=
+jugador3.nombre=assddad
+jugador3.dinero=1300
+jugador3.posicion=4
+jugador3.color=-256
+jugador3.enCarcel=false
+jugador3.turnosEnCarcel=0
+jugador3.propiedades=
+
+[PROPIEDADES]
+propiedad3.casas=0
+propiedad3.hotel=false
+propiedad3.propietario=qewrqw
+propiedad9.casas=0
+propiedad9.hotel=false
+propiedad9.propietario=adsfasfd
+
+[HISTORIAL]
+evento=Jugador qewrqw se ha unido a la partida
+evento=Jugador adsfasfd se ha unido a la partida
+evento=Jugador asdfad se ha unido a la partida
+evento=Jugador assddad se ha unido a la partida
+evento=qewrqw ha sacado 2 y 1
+evento=qewrqw ha comprado Avenida Báltico por 60 EUR
+evento=Turno de adsfasfd
+evento=adsfasfd ha sacado 6 y 3
+evento=adsfasfd ha comprado Avenida Connecticut por 120 EUR
+evento=adsfasfd ha sacado 6 y 1
+evento=Turno de asdfad
+evento=asdfad ha sacado 3 y 6
+evento=asdfad paga 8 EUR de alquiler a adsfasfd
+evento=Turno de assddad
+evento=assddad ha sacado 2 y 5
+evento=assddad saca carta de SUERTE: Retrocede 3 casillas
+evento=assddad paga 200 EUR de impuestos.

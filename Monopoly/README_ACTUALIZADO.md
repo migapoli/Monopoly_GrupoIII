@@ -31,32 +31,35 @@ El proyecto está funcional e incluye las siguientes características clave:
   - Gestión de Cárcel.
 
 ### Persistencia
-- **Guardar/Cargar Partida**: Sistema básico para guardar el estado del juego en archivos de texto.
+- **Guardar/Cargar Partida**: Sistema de guardado en archivos de texto en la carpeta `saves`.
+- **Cargar desde la pantalla inicial**: Botón para seleccionar partidas guardadas.
+- **Sobrescritura controlada**: Al guardar, permite sobrescribir partidas existentes o crear una nueva.
+- **Título dinámico**: Muestra el nombre de la partida cargada/guardada.
 
 ## 🛠️ Cómo Ejecutar
 
 Desde la raíz del proyecto (carpeta `Monopoly`), ejecuta los siguientes comandos en tu terminal:
 
 1. **Compilar**:
-   ```bash
-   javac -encoding UTF-8 -d out -sourcepath src src/App.java
-   ```
+  ```bash
+  javac -encoding UTF-8 -d out -sourcepath src src/monopoly/main/Main.java
+  ```
 
 2. **Ejecutar**:
-   ```bash
-   java -cp out App
-   ```
+  ```bash
+  java -cp out monopoly.main.Main
+  ```
 
 ## 📂 Estructura del Código
 
 - `monopoly.model`: Lógica de negocio (Tablero, Jugador, Casilla, Cartas).
 - `monopoly.view`: Interfaz gráfica (Ventanas, Paneles, Diálogos).
 - `monopoly.controller`: Gestión del flujo del juego y comunicación Model-View.
-- `monopoly.main`: Punto de entrada (`App.java` -> `Main.java`).
+- `monopoly.main`: Punto de entrada (`Main.java`).
 
 ## ✨ Últimas Actualizaciones
 
-- Implementación completa de la lógica de **Cárcel** (fianza, 3 turnos).
-- Sistema de **Cartas de Suerte y Comunidad** con efectos reales.
-- **Condición de Victoria**: El juego detecta cuando queda un solo jugador.
-- **Estilo Visual Moderno**: Nuevos diseños para diálogos de eventos.
+- **Carga desde pantalla inicial** con selector de partidas guardadas.
+- **Guardado con sobrescritura** y selección de partidas existentes.
+- **Título de ventana** con nombre de la partida cargada/guardada.
+- **Punto de entrada único** en `monopoly.main.Main`.
