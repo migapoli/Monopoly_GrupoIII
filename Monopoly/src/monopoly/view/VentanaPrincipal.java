@@ -12,7 +12,7 @@ import java.util.List;
 
 public class VentanaPrincipal extends JFrame implements ControladorJuego.ObservadorExtendido {
     private ControladorJuego controlador;
-    private PanelTablero panelTablero;
+    private PanelTableroImagen panelTablero;
     private PanelControles panelControles;
     private PanelInfoJugador panelInfoJugador;
     private PanelHistorial panelHistorial;
@@ -33,17 +33,13 @@ public class VentanaPrincipal extends JFrame implements ControladorJuego.Observa
 
     private void inicializarVentana() {
         setTitle(construirTituloVentana());
-        setSize(1400, 900);
+        setSize(1500, 950);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
         setLayout(new BorderLayout(0, 0));
 
-        // Establecer look and feel del sistema
-        try {
-            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        // Aplicar tema global
+        MonopolyTheme.aplicarTemaGlobal();
     }
 
     private String construirTituloVentana() {
@@ -58,23 +54,43 @@ public class VentanaPrincipal extends JFrame implements ControladorJuego.Observa
         // Crear menú superior
         setJMenuBar(crearBarraMenu());
 
-        // Panel principal
-        JPanel panelPrincipal = new JPanel(new BorderLayout(0, 0));
+        // Panel principal con fondo oscuro
+        JPanel panelPrincipal = new JPanel(new BorderLayout(0, 0)) {
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                Graphics2D g2 = (Graphics2D) g;
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                g2.setColor(MonopolyTheme.FONDO_PRINCIPAL);
+                g2.fillRect(0, 0, getWidth(), getHeight());
+            }
+        };
 
         // Crear los paneles
-        panelTablero = new PanelTablero(controlador);
+        panelTablero = new PanelTableroImagen(controlador);
         panelControles = new PanelControles(controlador);
         panelInfoJugador = new PanelInfoJugador(controlador);
         panelHistorial = new PanelHistorial(controlador);
 
         // Panel izquierdo: Tablero
         JPanel panelIzquierdo = new JPanel(new BorderLayout());
+        panelIzquierdo.setOpaque(false);
+        panelIzquierdo.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 10));
         panelIzquierdo.add(panelTablero, BorderLayout.CENTER);
 
         // Panel derecho: Información + Juego + Historial
-        JPanel panelDerecho = new JPanel(new BorderLayout(0, 0));
-        panelDerecho.setPreferredSize(new Dimension(380, 0));
-        panelDerecho.setBackground(Color.WHITE);
+        JPanel panelDerecho = new JPanel(new BorderLayout(0, 10)) {
+            @Override
+            protected void paintComponent(Graphics g) {
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                g2.setColor(new Color(30, 36, 50));
+                g2.fillRect(0, 0, getWidth(), getHeight());
+                g2.dispose();
+            }
+        };
+        panelDerecho.setPreferredSize(new Dimension(400, 0));
+        panelDerecho.setBorder(BorderFactory.createEmptyBorder(15, 10, 15, 15));
 
         panelDerecho.add(panelInfoJugador, BorderLayout.NORTH);
         panelDerecho.add(panelControles, BorderLayout.CENTER);
@@ -89,14 +105,22 @@ public class VentanaPrincipal extends JFrame implements ControladorJuego.Observa
 
     private JMenuBar crearBarraMenu() {
         JMenuBar menuBar = new JMenuBar();
+        menuBar.setBackground(MonopolyTheme.HEADER_OSCURO);
+        menuBar.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
 
         // Menú Archivo
         JMenu menuArchivo = new JMenu("Archivo");
+        menuArchivo.setForeground(MonopolyTheme.TEXTO_OSCURO);
+        menuArchivo.setFont(MonopolyTheme.FUENTE_NORMAL);
 
         JMenuItem itemGuardar = new JMenuItem("Guardar Partida");
+        itemGuardar.setBackground(MonopolyTheme.FONDO_PANEL);
+        itemGuardar.setForeground(MonopolyTheme.TEXTO_OSCURO);
         itemGuardar.addActionListener(e -> guardarPartida());
 
         JMenuItem itemSalir = new JMenuItem("Salir");
+        itemSalir.setBackground(MonopolyTheme.FONDO_PANEL);
+        itemSalir.setForeground(MonopolyTheme.TEXTO_OSCURO);
         itemSalir.addActionListener(e -> System.exit(0));
 
         menuArchivo.add(itemGuardar);
@@ -105,9 +129,14 @@ public class VentanaPrincipal extends JFrame implements ControladorJuego.Observa
 
         // Menú Ayuda
         JMenu menuAyuda = new JMenu("Ayuda");
+        menuAyuda.setForeground(MonopolyTheme.TEXTO_OSCURO);
+        menuAyuda.setFont(MonopolyTheme.FUENTE_NORMAL);
+
         JMenuItem itemAcerca = new JMenuItem("Acerca de Megapoly");
+        itemAcerca.setBackground(MonopolyTheme.FONDO_PANEL);
+        itemAcerca.setForeground(MonopolyTheme.TEXTO_OSCURO);
         itemAcerca.addActionListener(e -> JOptionPane.showMessageDialog(this,
-                "Megapoly: The Game\nVersion 1.0\n\nDesarrollado por Grupo III",
+                "Megapoly: The Game\nVersion 2.0\n\nDesarrollado por Grupo III",
                 "Acerca de", JOptionPane.INFORMATION_MESSAGE));
 
         menuAyuda.add(itemAcerca);

@@ -12,7 +12,7 @@ public class Main {
         } catch (Exception e) {
             System.err.println("No se pudo establecer el Look and Feel: " + e.getMessage());
         }
-        
+
         // Iniciar la aplicación en el Event Dispatch Thread
         SwingUtilities.invokeLater(() -> {
             PantallaConfiguracion pantallaConfig = new PantallaConfiguracion();
