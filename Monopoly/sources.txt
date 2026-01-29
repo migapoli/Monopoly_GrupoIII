@@ -1,31 +1,39 @@
-﻿C:\Users\usuario\OneDrive - Digitech\INTERFACES\monopoly\Monopoly_GrupoIII\Monopoly\src\App.java
-C:\Users\usuario\OneDrive - Digitech\INTERFACES\monopoly\Monopoly_GrupoIII\Monopoly\src\monopoly\controller\ControladorJuego.java
-C:\Users\usuario\OneDrive - Digitech\INTERFACES\monopoly\Monopoly_GrupoIII\Monopoly\src\monopoly\controller\IControladorJuego.java
-C:\Users\usuario\OneDrive - Digitech\INTERFACES\monopoly\Monopoly_GrupoIII\Monopoly\src\monopoly\controller\IJuegoControllerPuro.java
-C:\Users\usuario\OneDrive - Digitech\INTERFACES\monopoly\Monopoly_GrupoIII\Monopoly\src\monopoly\controller\IObservadorJuegoPuro.java
-C:\Users\usuario\OneDrive - Digitech\INTERFACES\monopoly\Monopoly_GrupoIII\Monopoly\src\monopoly\controller\JuegoControllerPuro.java
-C:\Users\usuario\OneDrive - Digitech\INTERFACES\monopoly\Monopoly_GrupoIII\Monopoly\src\monopoly\main\Main.java
-C:\Users\usuario\OneDrive - Digitech\INTERFACES\monopoly\Monopoly_GrupoIII\Monopoly\src\monopoly\model\cartas\CartaSuerte.java
-C:\Users\usuario\OneDrive - Digitech\INTERFACES\monopoly\Monopoly_GrupoIII\Monopoly\src\monopoly\model\cartas\MazoSuerte.java
-C:\Users\usuario\OneDrive - Digitech\INTERFACES\monopoly\Monopoly_GrupoIII\Monopoly\src\monopoly\model\casilla\Casilla.java
-C:\Users\usuario\OneDrive - Digitech\INTERFACES\monopoly\Monopoly_GrupoIII\Monopoly\src\monopoly\model\casilla\ICasilla.java
-C:\Users\usuario\OneDrive - Digitech\INTERFACES\monopoly\Monopoly_GrupoIII\Monopoly\src\monopoly\model\casilla\Propiedad.java
-C:\Users\usuario\OneDrive - Digitech\INTERFACES\monopoly\Monopoly_GrupoIII\Monopoly\src\monopoly\model\jugador\Dado.java
-C:\Users\usuario\OneDrive - Digitech\INTERFACES\monopoly\Monopoly_GrupoIII\Monopoly\src\monopoly\model\jugador\IJugador.java
-C:\Users\usuario\OneDrive - Digitech\INTERFACES\monopoly\Monopoly_GrupoIII\Monopoly\src\monopoly\model\jugador\Jugador.java
-C:\Users\usuario\OneDrive - Digitech\INTERFACES\monopoly\Monopoly_GrupoIII\Monopoly\src\monopoly\model\tablero\Partida.java
-C:\Users\usuario\OneDrive - Digitech\INTERFACES\monopoly\Monopoly_GrupoIII\Monopoly\src\monopoly\model\tablero\Tablero.java
-C:\Users\usuario\OneDrive - Digitech\INTERFACES\monopoly\Monopoly_GrupoIII\Monopoly\src\monopoly\view\DialogoCartaEvento.java
-C:\Users\usuario\OneDrive - Digitech\INTERFACES\monopoly\Monopoly_GrupoIII\Monopoly\src\monopoly\view\DialogoComprarPropiedad.java
-C:\Users\usuario\OneDrive - Digitech\INTERFACES\monopoly\Monopoly_GrupoIII\Monopoly\src\monopoly\view\PanelControles.java
-C:\Users\usuario\OneDrive - Digitech\INTERFACES\monopoly\Monopoly_GrupoIII\Monopoly\src\monopoly\view\PanelHistorial.java
-C:\Users\usuario\OneDrive - Digitech\INTERFACES\monopoly\Monopoly_GrupoIII\Monopoly\src\monopoly\view\PanelInfoJugador.java
-C:\Users\usuario\OneDrive - Digitech\INTERFACES\monopoly\Monopoly_GrupoIII\Monopoly\src\monopoly\view\PanelTablero.java
-C:\Users\usuario\OneDrive - Digitech\INTERFACES\monopoly\Monopoly_GrupoIII\Monopoly\src\monopoly\view\PanelTableroPuro.java
-C:\Users\usuario\OneDrive - Digitech\INTERFACES\monopoly\Monopoly_GrupoIII\Monopoly\src\monopoly\view\PantallaConfiguracion.java
-C:\Users\usuario\OneDrive - Digitech\INTERFACES\monopoly\Monopoly_GrupoIII\Monopoly\src\monopoly\view\VentanaPrincipal.java
-C:\Users\usuario\OneDrive - Digitech\INTERFACES\monopoly\Monopoly_GrupoIII\Monopoly\src\monopoly\view\VentanaPrincipalPura.java
-C:\Users\usuario\OneDrive - Digitech\INTERFACES\monopoly\Monopoly_GrupoIII\Monopoly\src\monopoly\view\dto\CasillaDTO.java
-C:\Users\usuario\OneDrive - Digitech\INTERFACES\monopoly\Monopoly_GrupoIII\Monopoly\src\monopoly\view\dto\JugadorDTO.java
-C:\Users\usuario\OneDrive - Digitech\INTERFACES\monopoly\Monopoly_GrupoIII\Monopoly\src\monopoly\view\dto\PropiedadDTO.java
-C:\Users\usuario\OneDrive - Digitech\INTERFACES\monopoly\Monopoly_GrupoIII\Monopoly\src\monopoly\view\dto\TableroDTO.java
+﻿C:\Users\Javi Montilla\Desktop\monopo\Monopoly_GrupoIII\Monopoly\src\monopoly\controller\ControladorJuego.java
+C:\Users\Javi Montilla\Desktop\monopo\Monopoly_GrupoIII\Monopoly\src\monopoly\controller\IControladorJuego.java
+C:\Users\Javi Montilla\Desktop\monopo\Monopoly_GrupoIII\Monopoly\src\monopoly\controller\IJuegoControllerPuro.java
+C:\Users\Javi Montilla\Desktop\monopo\Monopoly_GrupoIII\Monopoly\src\monopoly\controller\IObservadorJuegoPuro.java
+C:\Users\Javi Montilla\Desktop\monopo\Monopoly_GrupoIII\Monopoly\src\monopoly\controller\JuegoControllerPuro.java
+C:\Users\Javi Montilla\Desktop\monopo\Monopoly_GrupoIII\Monopoly\src\monopoly\main\Main.java
+C:\Users\Javi Montilla\Desktop\monopo\Monopoly_GrupoIII\Monopoly\src\monopoly\model\cartas\CartaSuerte.java
+C:\Users\Javi Montilla\Desktop\monopo\Monopoly_GrupoIII\Monopoly\src\monopoly\model\cartas\MazoSuerte.java
+C:\Users\Javi Montilla\Desktop\monopo\Monopoly_GrupoIII\Monopoly\src\monopoly\model\casilla\Casilla.java
+C:\Users\Javi Montilla\Desktop\monopo\Monopoly_GrupoIII\Monopoly\src\monopoly\model\casilla\CasillaEspecial.java
+C:\Users\Javi Montilla\Desktop\monopo\Monopoly_GrupoIII\Monopoly\src\monopoly\model\casilla\ICasilla.java
+C:\Users\Javi Montilla\Desktop\monopo\Monopoly_GrupoIII\Monopoly\src\monopoly\model\casilla\Propiedad.java
+C:\Users\Javi Montilla\Desktop\monopo\Monopoly_GrupoIII\Monopoly\src\monopoly\model\jugador\Dado.java
+C:\Users\Javi Montilla\Desktop\monopo\Monopoly_GrupoIII\Monopoly\src\monopoly\model\jugador\IJugador.java
+C:\Users\Javi Montilla\Desktop\monopo\Monopoly_GrupoIII\Monopoly\src\monopoly\model\jugador\Jugador.java
+C:\Users\Javi Montilla\Desktop\monopo\Monopoly_GrupoIII\Monopoly\src\monopoly\model\persistencia\GestorArchivos.java
+C:\Users\Javi Montilla\Desktop\monopo\Monopoly_GrupoIII\Monopoly\src\monopoly\model\tablero\Partida.java
+C:\Users\Javi Montilla\Desktop\monopo\Monopoly_GrupoIII\Monopoly\src\monopoly\model\tablero\Tablero.java
+C:\Users\Javi Montilla\Desktop\monopo\Monopoly_GrupoIII\Monopoly\src\monopoly\view\dto\CasillaDTO.java
+C:\Users\Javi Montilla\Desktop\monopo\Monopoly_GrupoIII\Monopoly\src\monopoly\view\dto\JugadorDTO.java
+C:\Users\Javi Montilla\Desktop\monopo\Monopoly_GrupoIII\Monopoly\src\monopoly\view\dto\PropiedadDTO.java
+C:\Users\Javi Montilla\Desktop\monopo\Monopoly_GrupoIII\Monopoly\src\monopoly\view\dto\TableroDTO.java
+C:\Users\Javi Montilla\Desktop\monopo\Monopoly_GrupoIII\Monopoly\src\monopoly\view\CoordenadaTablero.java
+C:\Users\Javi Montilla\Desktop\monopo\Monopoly_GrupoIII\Monopoly\src\monopoly\view\DialogoCarcel.java
+C:\Users\Javi Montilla\Desktop\monopo\Monopoly_GrupoIII\Monopoly\src\monopoly\view\DialogoCartaEvento.java
+C:\Users\Javi Montilla\Desktop\monopo\Monopoly_GrupoIII\Monopoly\src\monopoly\view\DialogoComprarPropiedad.java
+C:\Users\Javi Montilla\Desktop\monopo\Monopoly_GrupoIII\Monopoly\src\monopoly\view\DialogoImpuesto.java
+C:\Users\Javi Montilla\Desktop\monopo\Monopoly_GrupoIII\Monopoly\src\monopoly\view\MonopolyTheme.java
+C:\Users\Javi Montilla\Desktop\monopo\Monopoly_GrupoIII\Monopoly\src\monopoly\view\PanelControles.java
+C:\Users\Javi Montilla\Desktop\monopo\Monopoly_GrupoIII\Monopoly\src\monopoly\view\PanelHistorial.java
+C:\Users\Javi Montilla\Desktop\monopo\Monopoly_GrupoIII\Monopoly\src\monopoly\view\PanelInfoJugador.java
+C:\Users\Javi Montilla\Desktop\monopo\Monopoly_GrupoIII\Monopoly\src\monopoly\view\PanelTablero.java
+C:\Users\Javi Montilla\Desktop\monopo\Monopoly_GrupoIII\Monopoly\src\monopoly\view\PanelTableroImagen.java
+C:\Users\Javi Montilla\Desktop\monopo\Monopoly_GrupoIII\Monopoly\src\monopoly\view\PanelTableroPuro.java
+C:\Users\Javi Montilla\Desktop\monopo\Monopoly_GrupoIII\Monopoly\src\monopoly\view\PantallaConfiguracion.java
+C:\Users\Javi Montilla\Desktop\monopo\Monopoly_GrupoIII\Monopoly\src\monopoly\view\VentanaPrincipal.java
+C:\Users\Javi Montilla\Desktop\monopo\Monopoly_GrupoIII\Monopoly\src\monopoly\view\VentanaPrincipalPura.java
+C:\Users\Javi Montilla\Desktop\monopo\Monopoly_GrupoIII\Monopoly\src\test\TestJuego.java
+C:\Users\Javi Montilla\Desktop\monopo\Monopoly_GrupoIII\Monopoly\src\App.java

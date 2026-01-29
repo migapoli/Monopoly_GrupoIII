@@ -8,152 +8,225 @@ import java.awt.*;
 public class PanelControles extends JPanel {
     private ControladorJuego controlador;
     private JButton btnTirarDados;
-    private JButton btnComprar;
     private JButton btnFinalizarTurno;
-    private JLabel lblDado1;
-    private JLabel lblDado2;
     private JPanel panelDados;
-    
+    private int valorDado1 = 1;
+    private int valorDado2 = 1;
+
     public PanelControles(ControladorJuego controlador) {
         this.controlador = controlador;
         inicializarComponentes();
     }
-    
+
     private void inicializarComponentes() {
-        setLayout(new BorderLayout(10, 10));
-        setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createMatteBorder(0, 0, 1, 0, Color.BLACK),
-            BorderFactory.createEmptyBorder(15, 15, 15, 15)));
-        setBackground(Color.WHITE);
-        setPreferredSize(new Dimension(0, 200));
-        
+        setLayout(new BorderLayout(10, 15));
+        setOpaque(false);
+
+        // Panel contenedor con efecto glass
+        JPanel panelContenedor = new JPanel(new BorderLayout(10, 15)) {
+            @Override
+            protected void paintComponent(Graphics g) {
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+                g2.setColor(new Color(37, 43, 61, 230));
+                g2.fillRoundRect(0, 0, getWidth(), getHeight(), 15, 15);
+
+                g2.setColor(MonopolyTheme.BORDE_SUTIL);
+                g2.setStroke(new BasicStroke(1));
+                g2.drawRoundRect(0, 0, getWidth() - 1, getHeight() - 1, 15, 15);
+
+                g2.dispose();
+            }
+        };
+        panelContenedor.setOpaque(false);
+        panelContenedor.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+
         // Título del panel
         JLabel lblTitulo = new JLabel("PANEL DE JUEGO");
-        lblTitulo.setFont(new Font("Arial", Font.BOLD, 14));
+        lblTitulo.setFont(MonopolyTheme.FUENTE_TITULO);
+        lblTitulo.setForeground(MonopolyTheme.ACENTO_DORADO);
         lblTitulo.setHorizontalAlignment(SwingConstants.CENTER);
-        
+
+        // Panel de dados visual
+        panelDados = crearPanelDados();
+
         // Panel de botones
         JPanel panelBotones = crearPanelBotones();
-        
-        add(lblTitulo, BorderLayout.NORTH);
-        add(panelBotones, BorderLayout.CENTER);
+
+        panelContenedor.add(lblTitulo, BorderLayout.NORTH);
+        panelContenedor.add(panelDados, BorderLayout.CENTER);
+        panelContenedor.add(panelBotones, BorderLayout.SOUTH);
+
+        add(panelContenedor, BorderLayout.CENTER);
     }
-    
+
     private JPanel crearPanelDados() {
-        JPanel panel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 10));
-        panel.setBackground(new Color(240, 240, 255));
-        
-        // Dado 1
-        lblDado1 = new JLabel();
-        lblDado1.setPreferredSize(new Dimension(60, 60));
-        lblDado1.setBorder(BorderFactory.createLineBorder(Color.BLACK, 2));
-        lblDado1.setOpaque(true);
-        lblDado1.setBackground(Color.WHITE);
-        lblDado1.setHorizontalAlignment(SwingConstants.CENTER);
-        lblDado1.setFont(new Font("Arial", Font.BOLD, 32));
-        actualizarDado(lblDado1, 1);
-        
-        // Dado 2
-        lblDado2 = new JLabel();
-        lblDado2.setPreferredSize(new Dimension(60, 60));
-        lblDado2.setBorder(BorderFactory.createLineBorder(Color.BLACK, 2));
-        lblDado2.setOpaque(true);
-        lblDado2.setBackground(Color.WHITE);
-        lblDado2.setHorizontalAlignment(SwingConstants.CENTER);
-        lblDado2.setFont(new Font("Arial", Font.BOLD, 32));
-        actualizarDado(lblDado2, 1);
-        
-        panel.add(lblDado1);
-        panel.add(new JLabel("  +  "));
-        panel.add(lblDado2);
-        
+        JPanel panel = new JPanel() {
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                Graphics2D g2 = (Graphics2D) g;
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+                int dadoSize = 70;
+                int gap = 25;
+                int totalWidth = dadoSize * 2 + gap;
+                int startX = (getWidth() - totalWidth) / 2;
+                int startY = (getHeight() - dadoSize) / 2;
+
+                // Dado 1
+                dibujarDadoVisual(g2, startX, startY, dadoSize, valorDado1);
+
+                // Signo +
+                g2.setFont(new Font("Arial", Font.BOLD, 24));
+                g2.setColor(MonopolyTheme.TEXTO_SECUNDARIO);
+                g2.drawString("+", startX + dadoSize + 5, startY + dadoSize / 2 + 8);
+
+                // Dado 2
+                dibujarDadoVisual(g2, startX + dadoSize + gap, startY, dadoSize, valorDado2);
+
+                // Total
+                g2.setFont(new Font("Arial", Font.BOLD, 16));
+                g2.setColor(MonopolyTheme.ACENTO_DORADO);
+                String total = "= " + (valorDado1 + valorDado2);
+                FontMetrics fm = g2.getFontMetrics();
+                g2.drawString(total, (getWidth() - fm.stringWidth(total)) / 2, startY + dadoSize + 25);
+            }
+        };
+        panel.setOpaque(false);
+        panel.setPreferredSize(new Dimension(0, 130));
         return panel;
     }
-    
+
+    private void dibujarDadoVisual(Graphics2D g2d, int x, int y, int size, int valor) {
+        // Sombra
+        g2d.setColor(new Color(0, 0, 0, 50));
+        g2d.fillRoundRect(x + 4, y + 4, size, size, 12, 12);
+
+        // Fondo del dado con gradiente
+        GradientPaint gradient = new GradientPaint(
+                x, y, new Color(255, 255, 255),
+                x + size, y + size, new Color(235, 235, 240));
+        g2d.setPaint(gradient);
+        g2d.fillRoundRect(x, y, size, size, 12, 12);
+
+        // Borde
+        g2d.setColor(new Color(80, 90, 110));
+        g2d.setStroke(new BasicStroke(2));
+        g2d.drawRoundRect(x, y, size, size, 12, 12);
+
+        // Puntos del dado
+        g2d.setColor(new Color(50, 60, 80));
+        int puntoSize = size / 6;
+        int centroX = x + size / 2;
+        int centroY = y + size / 2;
+        int offset = size / 4;
+
+        // Posiciones de los puntos según el valor
+        switch (valor) {
+            case 1:
+                dibujarPunto(g2d, centroX, centroY, puntoSize);
+                break;
+            case 2:
+                dibujarPunto(g2d, x + offset, y + offset, puntoSize);
+                dibujarPunto(g2d, x + size - offset, y + size - offset, puntoSize);
+                break;
+            case 3:
+                dibujarPunto(g2d, x + offset, y + offset, puntoSize);
+                dibujarPunto(g2d, centroX, centroY, puntoSize);
+                dibujarPunto(g2d, x + size - offset, y + size - offset, puntoSize);
+                break;
+            case 4:
+                dibujarPunto(g2d, x + offset, y + offset, puntoSize);
+                dibujarPunto(g2d, x + size - offset, y + offset, puntoSize);
+                dibujarPunto(g2d, x + offset, y + size - offset, puntoSize);
+                dibujarPunto(g2d, x + size - offset, y + size - offset, puntoSize);
+                break;
+            case 5:
+                dibujarPunto(g2d, x + offset, y + offset, puntoSize);
+                dibujarPunto(g2d, x + size - offset, y + offset, puntoSize);
+                dibujarPunto(g2d, centroX, centroY, puntoSize);
+                dibujarPunto(g2d, x + offset, y + size - offset, puntoSize);
+                dibujarPunto(g2d, x + size - offset, y + size - offset, puntoSize);
+                break;
+            case 6:
+                dibujarPunto(g2d, x + offset, y + offset, puntoSize);
+                dibujarPunto(g2d, x + size - offset, y + offset, puntoSize);
+                dibujarPunto(g2d, x + offset, centroY, puntoSize);
+                dibujarPunto(g2d, x + size - offset, centroY, puntoSize);
+                dibujarPunto(g2d, x + offset, y + size - offset, puntoSize);
+                dibujarPunto(g2d, x + size - offset, y + size - offset, puntoSize);
+                break;
+        }
+    }
+
+    private void dibujarPunto(Graphics2D g2d, int x, int y, int size) {
+        g2d.fillOval(x - size / 2, y - size / 2, size, size);
+    }
+
     private JPanel crearPanelBotones() {
         JPanel panel = new JPanel();
-        panel.setLayout(new FlowLayout(FlowLayout.CENTER, 15, 20));
-        panel.setBackground(Color.WHITE);
-        
+        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+        panel.setOpaque(false);
+        panel.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
+
         // Botón Lanzar Dado
-        btnTirarDados = crearBoton("LANZAR DADO", new Color(45, 50, 70));
+        btnTirarDados = MonopolyTheme.crearBotonPrimario("LANZAR DADOS");
+        btnTirarDados.setPreferredSize(new Dimension(200, 45));
+        btnTirarDados.setMaximumSize(new Dimension(200, 45));
+        btnTirarDados.setAlignmentX(Component.CENTER_ALIGNMENT);
         btnTirarDados.addActionListener(e -> {
             controlador.tirarDados();
         });
-        
+
         // Botón Pasar Turno
-        btnFinalizarTurno = crearBoton("PASAR TURNO", new Color(45, 50, 70));
+        btnFinalizarTurno = MonopolyTheme.crearBotonPrimario("PASAR TURNO");
+        btnFinalizarTurno.setPreferredSize(new Dimension(200, 45));
+        btnFinalizarTurno.setMaximumSize(new Dimension(200, 45));
+        btnFinalizarTurno.setAlignmentX(Component.CENTER_ALIGNMENT);
         btnFinalizarTurno.addActionListener(e -> {
             controlador.finalizarTurno();
         });
-        
+
         panel.add(btnTirarDados);
+        panel.add(Box.createRigidArea(new Dimension(0, 10)));
         panel.add(btnFinalizarTurno);
-        
+
         return panel;
     }
-    
-    private JButton crearBoton(String texto, Color color) {
-        JButton boton = new JButton(texto);
-        boton.setFont(new Font("Arial", Font.BOLD, 12));
-        boton.setBackground(color);
-        boton.setForeground(Color.WHITE);
-        boton.setFocusPainted(false);
-        boton.setOpaque(true);
-        boton.setBorderPainted(false);
-        boton.setPreferredSize(new Dimension(140, 45));
-        
-        return boton;
-    }
-    
-    private void actualizarDado(JLabel lblDado, int valor) {
-        lblDado.setText(String.valueOf(valor));
-        
-        // Cambiar color según el valor
-        switch (valor) {
-            case 1:
-            case 6:
-                lblDado.setForeground(new Color(200, 0, 0));
-                break;
-            case 2:
-            case 5:
-                lblDado.setForeground(new Color(0, 0, 200));
-                break;
-            default:
-                lblDado.setForeground(Color.BLACK);
-        }
-    }
-    
+
     public void mostrarDados(int dado1, int dado2) {
-        // Si los labels no están inicializados, no hacer nada
-        if (lblDado1 == null || lblDado2 == null) {
-            return;
-        }
-        
-        actualizarDado(lblDado1, dado1);
-        actualizarDado(lblDado2, dado2);
-        
-        // Animación simple
-        Timer timer = new Timer(100, null);
-        final int[] contador = {0};
+        valorDado1 = dado1;
+        valorDado2 = dado2;
+
+        // Animación de los dados
+        Timer timer = new Timer(80, null);
+        final int[] contador = { 0 };
+        final int[] tempValor1 = { dado1 };
+        final int[] tempValor2 = { dado2 };
+
         timer.addActionListener(e -> {
-            if (contador[0] < 3) {
-                lblDado1.setBackground(lblDado1.getBackground() == Color.WHITE ? 
-                    new Color(255, 255, 200) : Color.WHITE);
-                lblDado2.setBackground(lblDado2.getBackground() == Color.WHITE ? 
-                    new Color(255, 255, 200) : Color.WHITE);
+            if (contador[0] < 5) {
+                // Valores aleatorios durante la animación
+                tempValor1[0] = (int) (Math.random() * 6) + 1;
+                tempValor2[0] = (int) (Math.random() * 6) + 1;
+                valorDado1 = tempValor1[0];
+                valorDado2 = tempValor2[0];
+                panelDados.repaint();
                 contador[0]++;
             } else {
-                lblDado1.setBackground(Color.WHITE);
-                lblDado2.setBackground(Color.WHITE);
-                ((Timer)e.getSource()).stop();
+                // Valor final
+                valorDado1 = dado1;
+                valorDado2 = dado2;
+                panelDados.repaint();
+                ((Timer) e.getSource()).stop();
             }
         });
         timer.start();
     }
-    
+
     public void actualizar() {
-        // Actualizar estado de botones si es necesario
         repaint();
     }
 }

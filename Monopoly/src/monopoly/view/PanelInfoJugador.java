@@ -6,202 +6,233 @@ import monopoly.model.casilla.Propiedad;
 import monopoly.model.jugador.IJugador;
 
 import javax.swing.*;
-import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.util.List;
 
 public class PanelInfoJugador extends JPanel {
     private ControladorJuego controlador;
-    private JPanel panelJugadores;
-    
+    private JPanel panelContenido;
+
     public PanelInfoJugador(ControladorJuego controlador) {
         this.controlador = controlador;
         inicializarComponentes();
     }
-    
+
     private void inicializarComponentes() {
         setLayout(new BorderLayout());
-        setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createMatteBorder(0, 0, 1, 0, Color.BLACK),
-            BorderFactory.createEmptyBorder(10, 10, 10, 10)));
-        setBackground(Color.WHITE);
-        setPreferredSize(new Dimension(0, 250));
-        
+        setOpaque(false);
+        setPreferredSize(new Dimension(0, 280));
+
+        // Panel contenedor con efecto glass
+        JPanel panelContenedor = new JPanel(new BorderLayout()) {
+            @Override
+            protected void paintComponent(Graphics g) {
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+                g2.setColor(new Color(37, 43, 61, 230));
+                g2.fillRoundRect(0, 0, getWidth(), getHeight(), 15, 15);
+
+                g2.setColor(MonopolyTheme.BORDE_SUTIL);
+                g2.setStroke(new BasicStroke(1));
+                g2.drawRoundRect(0, 0, getWidth() - 1, getHeight() - 1, 15, 15);
+
+                g2.dispose();
+            }
+        };
+        panelContenedor.setOpaque(false);
+        panelContenedor.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
+
         // Título del panel
-        JLabel lblTitulo = new JLabel("PANEL DE INFORMACIÓN");
-        lblTitulo.setFont(new Font("Arial", Font.BOLD, 14));
+        JLabel lblTitulo = new JLabel("JUGADOR ACTUAL");
+        lblTitulo.setFont(MonopolyTheme.FUENTE_TITULO);
+        lblTitulo.setForeground(MonopolyTheme.ACENTO_DORADO);
+        lblTitulo.setHorizontalAlignment(SwingConstants.CENTER);
         lblTitulo.setBorder(BorderFactory.createEmptyBorder(0, 0, 10, 0));
-        
+
         // Panel con scroll para la información
-        panelJugadores = new JPanel();
-        panelJugadores.setLayout(new BoxLayout(panelJugadores, BoxLayout.Y_AXIS));
-        panelJugadores.setBackground(Color.WHITE);
-        
-        JScrollPane scrollPane = new JScrollPane(panelJugadores);
+        panelContenido = new JPanel();
+        panelContenido.setLayout(new BoxLayout(panelContenido, BoxLayout.Y_AXIS));
+        panelContenido.setOpaque(false);
+
+        JScrollPane scrollPane = new JScrollPane(panelContenido);
         scrollPane.setBorder(null);
+        scrollPane.setOpaque(false);
+        scrollPane.getViewport().setOpaque(false);
         scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
         scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-        
-        add(lblTitulo, BorderLayout.NORTH);
-        add(scrollPane, BorderLayout.CENTER);
-        
+
+        panelContenedor.add(lblTitulo, BorderLayout.NORTH);
+        panelContenedor.add(scrollPane, BorderLayout.CENTER);
+
+        add(panelContenedor, BorderLayout.CENTER);
+
         actualizar();
     }
-    
+
     public void actualizar() {
-        panelJugadores.removeAll();
-        
-        List<IJugador> jugadores = controlador.getPartida().getJugadores();
+        panelContenido.removeAll();
+
         IJugador jugadorActual = controlador.getPartida().getJugadorActual();
-        
+
         if (jugadorActual != null) {
             JPanel infoActual = crearInfoJugadorActual(jugadorActual);
-            panelJugadores.add(infoActual);
+            panelContenido.add(infoActual);
         }
-        
-        panelJugadores.add(Box.createVerticalGlue());
-        
+
+        panelContenido.add(Box.createVerticalGlue());
+
         revalidate();
         repaint();
     }
-    
+
     private JPanel crearInfoJugadorActual(IJugador jugador) {
         JPanel panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-        panel.setBackground(Color.WHITE);
-        panel.setBorder(BorderFactory.createEmptyBorder(5, 0, 5, 0));
-        
-        // Turno actual
-        JLabel lblTurno = new JLabel("TURNO ACTUAL: " + jugador.getNombre() + " - *Símbolo*");
-        lblTurno.setFont(new Font("Arial", Font.BOLD, 12));
-        lblTurno.setAlignmentX(Component.LEFT_ALIGNMENT);
-        
+        panel.setOpaque(false);
+        panel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+
+        // Nombre del jugador con indicador de color
+        JPanel panelNombre = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0));
+        panelNombre.setOpaque(false);
+        panelNombre.setMaximumSize(new Dimension(Integer.MAX_VALUE, 35));
+
+        // Indicador de color
+        JPanel indicadorColor = new JPanel() {
+            @Override
+            protected void paintComponent(Graphics g) {
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                g2.setColor(jugador.getColor());
+                g2.fillRoundRect(0, 0, getWidth(), getHeight(), 6, 6);
+                g2.setColor(Color.WHITE);
+                g2.setStroke(new BasicStroke(1.5f));
+                g2.drawRoundRect(0, 0, getWidth() - 1, getHeight() - 1, 6, 6);
+                g2.dispose();
+            }
+        };
+        indicadorColor.setPreferredSize(new Dimension(20, 20));
+        indicadorColor.setOpaque(false);
+
+        JLabel lblNombre = new JLabel(jugador.getNombre());
+        lblNombre.setFont(new Font("Arial", Font.BOLD, 16));
+        lblNombre.setForeground(MonopolyTheme.TEXTO_PRINCIPAL);
+
+        panelNombre.add(indicadorColor);
+        panelNombre.add(lblNombre);
+
+        panel.add(panelNombre);
+        panel.add(Box.createRigidArea(new Dimension(0, 12)));
+
         // Posición actual
         Casilla casillaActual = controlador.getPartida().getTablero().getCasilla(jugador.getPosicion());
-        JLabel lblPosicion = new JLabel("• Posición actual: " + casillaActual.getNombre());
-        lblPosicion.setFont(new Font("Arial", Font.PLAIN, 11));
-        lblPosicion.setAlignmentX(Component.LEFT_ALIGNMENT);
-        
-        // Dinero
-        JLabel lblDinero = new JLabel("• Dinero acumulado: " + jugador.getDinero() + " EUR");
-        lblDinero.setFont(new Font("Arial", Font.PLAIN, 11));
-        lblDinero.setAlignmentX(Component.LEFT_ALIGNMENT);
-        
-        // Propiedades
-        JLabel lblPropiedadesTitulo = new JLabel("• Propiedades:");
-        lblPropiedadesTitulo.setFont(new Font("Arial", Font.PLAIN, 11));
-        lblPropiedadesTitulo.setAlignmentX(Component.LEFT_ALIGNMENT);
-        
-        panel.add(lblTurno);
+        JPanel panelPosicion = crearLineaInfo("📍", "Posición:", casillaActual.getNombre());
+        panel.add(panelPosicion);
         panel.add(Box.createRigidArea(new Dimension(0, 8)));
-        panel.add(lblPosicion);
-        panel.add(Box.createRigidArea(new Dimension(0, 3)));
-        panel.add(lblDinero);
-        panel.add(Box.createRigidArea(new Dimension(0, 3)));
-        panel.add(lblPropiedadesTitulo);
-        
+
+        // Dinero
+        String dineroFormateado = String.format("%,d", jugador.getDinero()).replace(",", ".") + " EUR";
+        JPanel panelDinero = crearLineaInfo("💰", "Dinero:", dineroFormateado);
+        panel.add(panelDinero);
+        panel.add(Box.createRigidArea(new Dimension(0, 12)));
+
+        // Propiedades
+        JLabel lblPropiedades = new JLabel("🏠 Propiedades: " + jugador.getPropiedades().size());
+        lblPropiedades.setFont(MonopolyTheme.FUENTE_NORMAL);
+        lblPropiedades.setForeground(MonopolyTheme.TEXTO_SECUNDARIO);
+        lblPropiedades.setAlignmentX(Component.LEFT_ALIGNMENT);
+        panel.add(lblPropiedades);
+
         // Lista de propiedades
         if (!jugador.getPropiedades().isEmpty()) {
-            JTextArea areaPropiedades = new JTextArea();
-            areaPropiedades.setEditable(false);
-            areaPropiedades.setBackground(Color.WHITE);
-            areaPropiedades.setFont(new Font("Arial", Font.PLAIN, 10));
-            areaPropiedades.setBorder(BorderFactory.createLineBorder(Color.GRAY));
-            
-            StringBuilder sb = new StringBuilder();
-            for (int i = 0; i < jugador.getPropiedades().size(); i++) {
-                Propiedad prop = jugador.getPropiedades().get(i);
-                sb.append("-- ").append(prop.getNombre()).append(" → X Casas\n");
-            }
-            areaPropiedades.setText(sb.toString());
-            areaPropiedades.setAlignmentX(Component.LEFT_ALIGNMENT);
-            
-            panel.add(Box.createRigidArea(new Dimension(0, 5)));
-            panel.add(areaPropiedades);
+            panel.add(Box.createRigidArea(new Dimension(0, 8)));
+            JPanel panelListaPropiedades = crearListaPropiedades(jugador.getPropiedades());
+            panel.add(panelListaPropiedades);
         }
-        
+
         return panel;
     }
-    
-    private JPanel crearPanelJugador(IJugador jugador, boolean esTurnoActual) {
-        JPanel panel = new JPanel();
-        panel.setLayout(new BorderLayout(5, 5));
-        panel.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createLineBorder(esTurnoActual ? 
-                new Color(255, 215, 0) : Color.GRAY, esTurnoActual ? 3 : 1),
-            new EmptyBorder(10, 10, 10, 10)
-        ));
-        panel.setBackground(Color.WHITE);
-        panel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 200));
-        
-        // Panel izquierdo: Color y nombre
-        JPanel panelIzquierdo = new JPanel(new BorderLayout(5, 5));
-        panelIzquierdo.setBackground(Color.WHITE);
-        
-        // Indicador de color del jugador
-        JPanel indicadorColor = new JPanel();
-        indicadorColor.setPreferredSize(new Dimension(30, 30));
-        indicadorColor.setBackground(jugador.getColor());
-        indicadorColor.setBorder(BorderFactory.createLineBorder(Color.BLACK, 2));
-        
-        // Nombre del jugador
-        JLabel lblNombre = new JLabel(jugador.getNombre());
-        lblNombre.setFont(new Font("Arial", Font.BOLD, 14));
-        if (esTurnoActual) {
-            lblNombre.setText("▶ " + jugador.getNombre());
-            lblNombre.setForeground(new Color(0, 100, 0));
-        }
-        
-        panelIzquierdo.add(indicadorColor, BorderLayout.WEST);
-        panelIzquierdo.add(lblNombre, BorderLayout.CENTER);
-        
-        // Panel central: Información
-        JPanel panelInfo = new JPanel();
-        panelInfo.setLayout(new BoxLayout(panelInfo, BoxLayout.Y_AXIS));
-        panelInfo.setBackground(Color.WHITE);
-        
-        JLabel lblDinero = new JLabel("💰 Dinero: $" + jugador.getDinero());
-        lblDinero.setFont(new Font("Arial", Font.PLAIN, 12));
-        
-        JLabel lblPosicion = new JLabel("📍 Posición: " + jugador.getPosicion());
-        lblPosicion.setFont(new Font("Arial", Font.PLAIN, 12));
-        
-        JLabel lblPropiedades = new JLabel("🏠 Propiedades: " + jugador.getPropiedades().size());
-        lblPropiedades.setFont(new Font("Arial", Font.PLAIN, 12));
-        
-        panelInfo.add(lblDinero);
-        panelInfo.add(Box.createRigidArea(new Dimension(0, 3)));
-        panelInfo.add(lblPosicion);
-        panelInfo.add(Box.createRigidArea(new Dimension(0, 3)));
-        panelInfo.add(lblPropiedades);
-        
-        // Si tiene propiedades, mostrar lista
-        if (!jugador.getPropiedades().isEmpty()) {
-            panelInfo.add(Box.createRigidArea(new Dimension(0, 5)));
-            JPanel panelPropsList = crearListaPropiedades(jugador.getPropiedades());
-            panelInfo.add(panelPropsList);
-        }
-        
-        panel.add(panelIzquierdo, BorderLayout.NORTH);
-        panel.add(panelInfo, BorderLayout.CENTER);
-        
+
+    private JPanel crearLineaInfo(String icono, String etiqueta, String valor) {
+        JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0));
+        panel.setOpaque(false);
+        panel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 25));
+        panel.setAlignmentX(Component.LEFT_ALIGNMENT);
+
+        JLabel lblIcono = new JLabel(icono);
+        lblIcono.setFont(new Font("Segoe UI Emoji", Font.PLAIN, 14));
+        lblIcono.setForeground(MonopolyTheme.TEXTO_PRINCIPAL);
+
+        JLabel lblEtiqueta = new JLabel(etiqueta);
+        lblEtiqueta.setFont(MonopolyTheme.FUENTE_NORMAL);
+        lblEtiqueta.setForeground(MonopolyTheme.TEXTO_SECUNDARIO);
+
+        JLabel lblValor = new JLabel(valor);
+        lblValor.setFont(new Font("Arial", Font.BOLD, 13));
+        lblValor.setForeground(MonopolyTheme.TEXTO_PRINCIPAL);
+
+        panel.add(lblIcono);
+        panel.add(lblEtiqueta);
+        panel.add(lblValor);
+
         return panel;
     }
-    
+
     private JPanel crearListaPropiedades(List<Propiedad> propiedades) {
         JPanel panel = new JPanel();
-        panel.setLayout(new FlowLayout(FlowLayout.LEFT, 3, 2));
-        panel.setBackground(Color.WHITE);
-        
+        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+        panel.setOpaque(false);
+        panel.setAlignmentX(Component.LEFT_ALIGNMENT);
+        panel.setBorder(BorderFactory.createEmptyBorder(0, 20, 0, 0));
+
         for (Propiedad prop : propiedades) {
-            JPanel cuadrito = new JPanel();
-            cuadrito.setPreferredSize(new Dimension(20, 20));
-            cuadrito.setBackground(prop.getGrupoColor());
-            cuadrito.setBorder(BorderFactory.createLineBorder(Color.BLACK, 1));
-            cuadrito.setToolTipText(prop.getNombre());
-            panel.add(cuadrito);
+            JPanel lineaPropiedad = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 2));
+            lineaPropiedad.setOpaque(false);
+            lineaPropiedad.setMaximumSize(new Dimension(Integer.MAX_VALUE, 22));
+
+            // Indicador de color del grupo
+            JPanel indicadorGrupo = new JPanel() {
+                @Override
+                protected void paintComponent(Graphics g) {
+                    Graphics2D g2 = (Graphics2D) g.create();
+                    g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                    g2.setColor(prop.getGrupoColor());
+                    g2.fillRoundRect(0, 0, getWidth(), getHeight(), 4, 4);
+                    g2.dispose();
+                }
+            };
+            indicadorGrupo.setPreferredSize(new Dimension(12, 12));
+            indicadorGrupo.setOpaque(false);
+
+            // Nombre de la propiedad
+            String nombreProp = prop.getNombre();
+            if (nombreProp.length() > 18) {
+                nombreProp = nombreProp.substring(0, 16) + "..";
+            }
+            JLabel lblNombreProp = new JLabel(nombreProp);
+            lblNombreProp.setFont(MonopolyTheme.FUENTE_PEQUENA);
+            lblNombreProp.setForeground(MonopolyTheme.TEXTO_PRINCIPAL);
+
+            // Casas/Hotel
+            String casasInfo = "";
+            if (prop.tieneHotel()) {
+                casasInfo = "🏨";
+            } else if (prop.getCasas() > 0) {
+                casasInfo = "🏠 x" + prop.getCasas();
+            }
+            JLabel lblCasas = new JLabel(casasInfo);
+            lblCasas.setFont(new Font("Segoe UI Emoji", Font.PLAIN, 10));
+            lblCasas.setForeground(MonopolyTheme.COLOR_EXITO);
+
+            lineaPropiedad.add(indicadorGrupo);
+            lineaPropiedad.add(lblNombreProp);
+            if (!casasInfo.isEmpty()) {
+                lineaPropiedad.add(lblCasas);
+            }
+
+            panel.add(lineaPropiedad);
         }
-        
+
         return panel;
     }
 }
