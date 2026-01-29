@@ -12,3 +12,4 @@ if %ERRORLEVEL% NEQ 0 (
 echo Iniciando Juego...
 java -cp out monopoly.main.Main
 pause
+hfhjhf

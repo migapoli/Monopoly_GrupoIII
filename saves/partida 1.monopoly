@@ -1,15 +1,15 @@
 # Partida de Monopoly guardada
-# Fecha: 2026-01-25 15:17:12
+# Fecha: 2026-01-26 08:52:37
 
 [PARTIDA]
-turnoActual=3
+turnoActual=0
 juegoTerminado=false
 
 [JUGADORES]
 cantidad=4
 jugador0.nombre=qewrqw
-jugador0.dinero=1440
-jugador0.posicion=3
+jugador0.dinero=1240
+jugador0.posicion=4
 jugador0.color=-65536
 jugador0.enCarcel=false
 jugador0.turnosEnCarcel=0
@@ -30,7 +30,7 @@ jugador2.turnosEnCarcel=0
 jugador2.propiedades=
 jugador3.nombre=assddad
 jugador3.dinero=1300
-jugador3.posicion=4
+jugador3.posicion=11
 jugador3.color=-256
 jugador3.enCarcel=false
 jugador3.turnosEnCarcel=0
@@ -62,3 +62,8 @@ evento=Turno de assddad
 evento=assddad ha sacado 2 y 5
 evento=assddad saca carta de SUERTE: Retrocede 3 casillas
 evento=assddad paga 200 EUR de impuestos.
+evento=assddad ha sacado 1 y 6
+evento=Turno de qewrqw
+evento=qewrqw ha sacado 3 y 1
+evento=qewrqw saca carta de SUERTE: Retrocede 3 casillas
+evento=qewrqw paga 200 EUR de impuestos.
